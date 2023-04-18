@@ -154,8 +154,8 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 while pygame.time.get_ticks():
-                bullet = Bullet(player.rect.centerx, player.rect.top)
-                bullets.add(bullet)
+                    bullet = Bullet(player.rect.centerx, player.rect.top)
+                    bullets.add(bullet)
 
     # Updata player
     player.update()
