@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys
 
 # The width and height of Game
 SCREEN_WIDTH = 1400
@@ -23,8 +24,8 @@ boss_frame = ['../Assets/boss_Frame1.png', '../Assets/boss_Frame2.png',
                 '../Assets/boss_Frame3.png', '../Assets/boss_Frame4.png']
 
 active_Frame = 0
-#########################################################################
 
+#########################################################################
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -114,11 +115,10 @@ class Bullet(pygame.sprite.Sprite):
         # move bullets up
         self.rect.y += self.speed
 
-        if self.rect_x < 0:
+        if self.rect.bottom < 0:
             self.kill()  # need to check
 
 #########################################################################
-
 
 # Make Player
 player = Player()
@@ -151,9 +151,9 @@ while running:
             running = False
 
         # Shoot bullets
-        if event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                while pygame.time.get_ticks():
+                # while pygame.time.get_ticks():
                     bullet = Bullet(player.rect.centerx, player.rect.top)
                     bullets.add(bullet)
 
@@ -167,7 +167,7 @@ while running:
     # enemy2.update()
 
     # Updata bullet
-    #bullets.update()
+    bullets.update()
 
     # Collision judgement
     for bullet in bullets:
