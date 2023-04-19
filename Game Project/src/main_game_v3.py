@@ -112,7 +112,7 @@ class Bullet(pygame.sprite.Sprite):
             enemy.damage()
 
 class Enemy1(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, id):
         super().__init__()
 
         # Load image of enemy1
@@ -124,6 +124,7 @@ class Enemy1(pygame.sprite.Sprite):
         self.rect.y = random.randrange(-100, -50)
         self.speed = random.randrange(8, 12)
         self.hp = 2
+        self.id = id
 
     # Move enemy1
     def update(self):
@@ -139,6 +140,9 @@ class Enemy1(pygame.sprite.Sprite):
         self.hp -= 1
         if self.hp == 0:
             self.kill()
+
+    def reset(self):
+        self.hp = 2
 
 class Enemy2(pygame.sprite.Sprite):
     def __init__(self):
@@ -176,9 +180,13 @@ player = Player()
 
 # Make enemy1 group
 enemies1 = pygame.sprite.Group()
+enemy1_id = 0
 for i in range(6):
-    enemy1 = Enemy1()
+    enemy1 = Enemy1(enemy1_id)
     enemies1.add(enemy1)
+    enemy1_id += 1
+
+enemy1_hp = {enemy1.id: enemy1.hp for enemy1 in enemies1}
 
 # Make enemy2 group
 enemies2 = pygame.sprite.Group()
@@ -225,16 +233,12 @@ while running:
 
     # Collision judgement
     for bullet in bullets:
-        bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, False)
-        for bullet_hit1 in bullet_hits1:
+        bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, True)
+        for enemy1 in bullet_hits1:
             bullet.kill()
-            enemy1.hp -= 1
-            if enemy1.hp == 0:
-                bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, True )
-                enemies1.remove(enemy1)
-                new_enemy1 = Enemy1()
-                enemies1.add(new_enemy1)
-                enemy1.hp = 
+            enemy1.damage()
+            new_enemy1 = Enemy1()
+            enemies1.add(new_enemy1)
 
         bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, True)
         for bullet_hit2 in bullet_hits2:

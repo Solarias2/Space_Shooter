@@ -225,16 +225,16 @@ while running:
 
     # Collision judgement
     for bullet in bullets:
-        bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, False)
+        bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, True)
         for bullet_hit1 in bullet_hits1:
-            bullet.kill()
-            enemy1.hp -= 1
-            if enemy1.hp == 0:
-                bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, True )
-                enemies1.remove(enemy1)
-                new_enemy1 = Enemy1()
-                enemies1.add(new_enemy1)
-                enemy1.hp = 
+            if bullet_hits1 in bullets.groups():
+                bullet_hit1.kill()
+            else:
+                bullet_hit1.hp -= 1
+                if bullet_hit1.hp == 0:
+                    bullet_hit1.kill()
+                    new_enemy1 = Enemy1()
+                    enemies1.add(new_enemy1)
 
         bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, True)
         for bullet_hit2 in bullet_hits2:
