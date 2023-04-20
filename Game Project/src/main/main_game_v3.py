@@ -17,7 +17,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 background_color = (0, 0, 0)
 screen.fill(background_color)
 
-# bg_img = pygame.image.load("../Assets/bgimage.jpg")
+pre_bg_img = pygame.image.load("../Assets/bgimage.jpeg")
+bg_img = pygame.transform.scale(pre_bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 bg_y = 0
 
 # Object image
@@ -31,6 +32,34 @@ boss_frame = ['../Assets/boss_Frame1.png', '../Assets/boss_Frame2.png',
               '../Assets/boss_Frame3.png', '../Assets/boss_Frame4.png']
 
 active_Frame = 0
+
+# Create a font of menu option
+menu_font = pygame.font.Font(None, 36)
+
+# Define munu options
+menu_options = [
+    "Start Game",
+    "Settings",
+    "Help",
+    "Quit"
+]
+
+# Loop through the menu options and create a menu item for each one
+menu_items = []
+for index, option in enumerate(menu_options):
+    text = menu_font.render(option, True, (255, 255, 255))
+    rect = text.get_rect()
+    rect.centerx = screen.get_rect().centerx
+    rect.centery = screen.get_rect().centery + index * 50
+    menu_items.append((option, text, rect))
+
+# Set the default menu option to the first one
+menu_index = 0
+
+# Create a font of score
+score_font = pygame.font.Font(None, 36)
+
+score = 0
 
 
 ################################## Class definition of game object ##################################
@@ -210,6 +239,9 @@ while running:
     # Process the events
     screen.fill((0, 0, 0))
 
+    # Draw score on surface object
+    score_surface = score_font.render("Score: " + str(score), True, (255, 255, 255))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -260,14 +292,20 @@ while running:
         print("Game Over!!")
         running = False
 
+    # Draw background and scroll
+    bg_y = (bg_y + 8) % 900
+    screen.blit(bg_img, [0, bg_y])
+    screen.blit(bg_img, [0, bg_y - 900])
+
+    # Display Surface objects on screen
+    screen.blit(score_surface, (10, 10))
+
     # Draw the player, enemies, and bullet
     screen.blit(player.image, player.rect)
     enemies1.draw(screen)
     enemies2.draw(screen)
     bullets.draw(screen)
 
-    # screen.blit(bg_img, [0, bg_y])
-    # screen.blit(bg_img, [0, bg_y - 300])
 
     # Update screen
     pygame.display.flip()
