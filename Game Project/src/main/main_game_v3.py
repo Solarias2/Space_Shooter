@@ -1,7 +1,7 @@
 import pygame
 import random
 import sys
-
+from pygame import mixer
 
 ################################## Setting of game ##################################
 
@@ -21,6 +21,10 @@ pre_bg_img = pygame.image.load("../Assets/bgimage.jpeg")
 bg_img = pygame.transform.scale(pre_bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 bg_y = 0
 
+#Starts up menu music
+mixer.music.load('../Music/menu_music.wav')
+mixer.music.play(-1)
+
 # Object image
 player_frame = ['../Assets/player_Frame1.png', '../Assets/player_Frame2.png',
                 '../Assets/player_Frame3.png', '../Assets/player_Frame4.png']
@@ -35,6 +39,15 @@ active_Frame = 0
 
 # Create a font of menu option
 menu_font = pygame.font.Font(None, 36)
+
+#Game States
+STATE_MENU = 0
+STATE_GAMEPLAY = 1
+
+#current state
+game_state = STATE_MENU
+
+
 
 # Define munu options
 menu_options = [
@@ -246,7 +259,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Shoot bullets
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 # while pygame.time.get_ticks():
