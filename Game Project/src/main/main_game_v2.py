@@ -17,9 +17,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 background_color = (0, 0, 0)
 screen.fill(background_color)
 
-# bg_img = pygame.image.load("../Assets/bgimage.jpg")
-bg_y = 0
-
 # Object image
 player_frame = ['../Assets/player_Frame1.png', '../Assets/player_Frame2.png',
                 '../Assets/player_Frame3.png', '../Assets/player_Frame4.png']
@@ -126,7 +123,7 @@ class Enemy1(pygame.sprite.Sprite):
         self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randrange(-100, -50)
         self.speed = random.randrange(8, 12)
-        self.hp = 3
+        self.hp = 2
 
     # Move enemy1
     def update(self):
@@ -142,7 +139,6 @@ class Enemy1(pygame.sprite.Sprite):
         self.hp -= 1
         if self.hp == 0:
             self.kill()
-            return True
 
 class Enemy2(pygame.sprite.Sprite):
     def __init__(self):
@@ -166,12 +162,6 @@ class Enemy2(pygame.sprite.Sprite):
             self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -50)
             self.speed = random.randrange(5, 15)
-
-    def damage(self):
-        self.hp -= 1
-        if self.hp == 0:
-            self.kill()
-            return True
 
 
 class Boss_Enemy(pygame.sprite.Sprite):
@@ -235,19 +225,42 @@ while running:
 
     # Collision judgement
     for bullet in bullets:
-        bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, False)
-        for enemy1 in bullet_hits1:
-            bullet.kill()
-            if enemy1.damage():
-                new_enemy1 = Enemy1()
-                enemies1.add(new_enemy1)
+        bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, True)
+        for bullet_hit1 in bullet_hits1:
+            if bullet_hits1 in bullets.groups():
+                bullet_hit1.kill()
+            else:
+                bullet_hit1.hp -= 1
+                if bullet_hit1.hp == 0:
+                    bullet_hit1.kill()
+                    new_enemy1 = Enemy1()
+                    enemies1.add(new_enemy1)
 
         bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, True)
         for bullet_hit2 in bullet_hits2:
             bullet.kill()
-            if enemy2.damage():
-                new_enemy2 = Enemy2()
-                enemies2.add(new_enemy2)
+            new_enemy2 = Enemy2()
+            enemies2.add(new_enemy2)
+
+    # Collision judgement2
+    # for bullet in bullets:
+    #     for enemy1 in enemies1:
+    #         if bullet.hits_enemy(enemy1):
+    #             hit_enemies.append(enemy1)
+    #             bullet.kill()
+    #             break
+
+    # # Treat hit enemies collectively
+    # for enemy in hit_enemies:
+    #     enemy.hp -= 1
+    #     if enemy.hp == 0:
+    #         enemy.kill()
+    #         new_enemy1 = Enemy1()
+    #         enemies1.add(new_enemy1)
+
+    # Collision judgement3
+    # for bullet in bullets:
+    #         bullet.hits_enemy(enemies1)
 
     # Gameover
     player_hits1 = pygame.sprite.spritecollide(player, enemies1, True)
@@ -265,9 +278,6 @@ while running:
     enemies1.draw(screen)
     enemies2.draw(screen)
     bullets.draw(screen)
-
-    # screen.blit(bg_img, [0, bg_y])
-    # screen.blit(bg_img, [0, bg_y - 300])
 
     # Update screen
     pygame.display.flip()
