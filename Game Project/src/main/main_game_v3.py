@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 background_color = (0, 0, 0)
 screen.fill(background_color)
 
-pre_bg_img = pygame.image.load("../Assets/bgimage.jpeg")
+pre_bg_img = pygame.image.load("../Assets/bgimg.jpeg")
 bg_img = pygame.transform.scale(pre_bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 bg_y = 0
 
@@ -82,9 +82,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         # Load image of player
-        # original_image = pygame.image.load(player_frame[active_Frame]) # need to check
-        # self.image = pygame.transform.scale(original_image, (original_image.get_width//2, original_image.get_height//2)) # need to check
-        self.image = pygame.image.load(player_frame[active_Frame])
+        original_image = pygame.image.load(player_frame[active_Frame])
+        self.image = pygame.transform.scale(original_image, (original_image.get_width() // 2, original_image.get_height() // 2))
 
         # Setting the position of player
         self.rect = self.image.get_rect()
@@ -144,18 +143,6 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
-    # Collision judgement
-    def hits_enemy(self, enemies):
-        # if (self.rect.x > enemy.rect.x and self.rect.x < enemy.rect.x + enemy.rect.width) and (self.rect.y > enemy.rect.y and self.rect.y < enemy.rect.y + enemy.rect.height):
-        #     return True
-        
-        # else:
-        #     return False
-
-        hit_enemies = pygame.sprite.spritecollide(bullet, enemies, True)
-        for enemy in hit_enemies:
-            enemy.damage()
-
 class Enemy1(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -191,23 +178,25 @@ class Enemy2(pygame.sprite.Sprite):
         super().__init__()
 
         # Load image of enemy2
-        self.image = pygame.image.load(enemy2_frame[active_Frame])
+        original_image = pygame.image.load(enemy2_frame[active_Frame])
+        self.image = pygame.transform.scale(original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
 
         # Setting the position of enemy2
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randrange(-100, -50)
         self.speed = random.randrange(5, 15)
+        self.hp = 6
 
     # Move enemy2
     def update(self):
         self.rect.y += self.speed
 
-        # If enemy1 go out from screen, reapper on it
+        # If enemy2 go out from screen, reapper on it
         if self.rect.top > SCREEN_HEIGHT:
             self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -50)
-            self.speed = random.randrange(5, 15)
+            self.speed = random.randrange(11, 15)
 
     def damage(self):
         self.hp -= 1
@@ -216,9 +205,22 @@ class Enemy2(pygame.sprite.Sprite):
             return True
 
 
-class Boss_Enemy(pygame.sprite.Sprite):
+class Boss(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+
+        # Load image of boss
+        original_image = pygame.image.load(enemy2_frame[active_Frame])
+        self.image = pygame.transform.scale(original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
+
+        # Setting the position of enemy2
+        self.rect = self.image.get_rect()
+        self.rect.centerx = SCREEN_WIDTH / 2
+        self.rect.bottom = 10
+        self.hp = 50
+
+    def update(self):
+        return True
 
 
 ################################## Basic parts of the game ##################################
@@ -243,6 +245,9 @@ bullets = pygame.sprite.Group()
 
 # Hit ememies group
 hit_enemies = []
+
+# Make boss
+boss = pygame.sprite.Group()
 
 clock = pygame.time.Clock()
 
@@ -272,7 +277,7 @@ while running:
     enemies1.update()
 
     # Updata enemy2
-    # enemies2.update()
+    enemies2.update()
 
     # Updata bullet
     bullets.update()
@@ -283,13 +288,15 @@ while running:
         for enemy1 in bullet_hits1:
             bullet.kill()
             if enemy1.damage():
+                score += 10
                 new_enemy1 = Enemy1()
                 enemies1.add(new_enemy1)
 
-        bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, True)
-        for bullet_hit2 in bullet_hits2:
+        bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, False)
+        for enemy2 in bullet_hits2:
             bullet.kill()
             if enemy2.damage():
+                score += 50
                 new_enemy2 = Enemy2()
                 enemies2.add(new_enemy2)
 
@@ -318,6 +325,11 @@ while running:
     enemies2.draw(screen)
     bullets.draw(screen)
 
+    # Boss update
+    # if score >= 100:
+
+    #     boss.draw(screen)
+    #     boss.update()
 
     # Update screen
     pygame.display.flip()
