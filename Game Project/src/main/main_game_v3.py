@@ -1,7 +1,7 @@
 import pygame
 import random
 import sys
-
+from pygame import mixer
 
 ################################## Setting of game ##################################
 
@@ -20,6 +20,10 @@ screen.fill(background_color)
 pre_bg_img = pygame.image.load("../Assets/bgimg.jpeg")
 bg_img = pygame.transform.scale(pre_bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 bg_y = 0
+
+#Starts up menu music
+mixer.music.load('../Music/menu_music.wav')
+mixer.music.play(-1)
 
 # Object image
 player_frame = ['../Assets/player_Frame1.png', '../Assets/player_Frame2.png',
@@ -200,10 +204,10 @@ class Boss(pygame.sprite.Sprite):
         original_image = pygame.image.load(enemy2_frame[active_Frame])
         self.image = pygame.transform.scale(original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
 
-        # Setting the position of enemy2
+        # Setting the position of boss
         self.rect = self.image.get_rect()
         self.rect.centerx = SCREEN_WIDTH / 2
-        self.rect.bottom = 10
+        self.rect.bottom = 80
         self.hp = 50
 
     def update(self):
@@ -234,7 +238,10 @@ bullets = pygame.sprite.Group()
 hit_enemies = []
 
 # Make boss
-boss = pygame.sprite.Group()
+bosses = pygame.sprite.Group()
+boss = Boss()
+bosses.add(boss)
+# boss = Boss()
 
 clock = pygame.time.Clock()
 
@@ -314,10 +321,12 @@ while running:
     bullets.draw(screen)
 
     # Boss update
-    # if score >= 100:
-
-    #     boss.draw(screen)
-    #     boss.update()
+    if score >= 100:
+        enemies1.empty()
+        enemies2.empty()
+        bosses.draw(screen)
+        # screen.blit(boss.image, boss.rect)
+        bosses.update()
 
     # Update screen
     pygame.display.flip()
