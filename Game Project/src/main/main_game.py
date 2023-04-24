@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+from pygame import mixer
 
 
 ################################## Setting of game ##################################
@@ -17,8 +18,13 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 background_color = (0, 0, 0)
 screen.fill(background_color)
 
-# bg_img = pygame.image.load("../Assets/bgimage.jpg")
+pre_bg_img = pygame.image.load("../Assets/bgimg.jpeg")
+bg_img = pygame.transform.scale(pre_bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 bg_y = 0
+
+#Starts up menu music
+mixer.music.load('../Music/stage_music.wav')
+mixer.music.play(-1)
 
 # Object image
 player_frame = ['../Assets/player_Frame1.png', '../Assets/player_Frame2.png',
@@ -27,10 +33,44 @@ enemy1_frame = ['../Assets/enemy1_Frame1.png', '../Assets/enemy1_Frame2.png',
                 '../Assets/enemy1_Frame3.png', '../Assets/enemy1_Frame4.png']
 enemy2_frame = ['../Assets/enemy2_Frame1.png', '../Assets/enemy2_Frame2.png',
                 '../Assets/enemy2_Frame3.png', '../Assets/enemy2_Frame4.png']
-boss_frame = ['../Assets/boss_Frame1.png', '../Assets/boss_Frame2.png',
-              '../Assets/boss_Frame3.png', '../Assets/boss_Frame4.png']
+boss_frame = ['../Assets/Boss.png']
 
 active_Frame = 0
+
+# Create a font of menu option
+menu_font = pygame.font.Font(None, 36)
+
+#Game States
+STATE_MENU = 0
+STATE_GAMEPLAY = 1
+
+#current state
+game_state = STATE_MENU
+
+# Define munu options
+menu_options = [
+    "Start Game",
+    "Settings",
+    "Help",
+    "Quit"
+]
+
+# Loop through the menu options and create a menu item for each one
+menu_items = []
+for index, option in enumerate(menu_options):
+    text = menu_font.render(option, True, (255, 255, 255))
+    rect = text.get_rect()
+    rect.centerx = screen.get_rect().centerx
+    rect.centery = screen.get_rect().centery + index * 50
+    menu_items.append((option, text, rect))
+
+# Set the default menu option to the first one
+menu_index = 0
+
+# Create a font of score
+score_font = pygame.font.Font(None, 36)
+
+score = 0
 
 
 ################################## Class definition of game object ##################################
@@ -40,9 +80,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         # Load image of player
-        # original_image = pygame.image.load(player_frame[active_Frame]) # need to check
-        # self.image = pygame.transform.scale(original_image, (original_image.get_width//2, original_image.get_height//2)) # need to check
-        self.image = pygame.image.load(player_frame[active_Frame])
+        original_image = pygame.image.load(player_frame[active_Frame])
+        self.image = pygame.transform.scale(original_image, (original_image.get_width() // 2, original_image.get_height() // 2))
 
         # Setting the position of player
         self.rect = self.image.get_rect()
@@ -80,7 +119,6 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
 
-
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -101,18 +139,6 @@ class Bullet(pygame.sprite.Sprite):
 
         if self.rect.bottom < 0:
             self.kill()
-
-    # Collision judgement
-    def hits_enemy(self, enemies):
-        # if (self.rect.x > enemy.rect.x and self.rect.x < enemy.rect.x + enemy.rect.width) and (self.rect.y > enemy.rect.y and self.rect.y < enemy.rect.y + enemy.rect.height):
-        #     return True
-        
-        # else:
-        #     return False
-
-        hit_enemies = pygame.sprite.spritecollide(bullet, enemies, True)
-        for enemy in hit_enemies:
-            enemy.damage()
 
 class Enemy1(pygame.sprite.Sprite):
     def __init__(self):
@@ -149,23 +175,25 @@ class Enemy2(pygame.sprite.Sprite):
         super().__init__()
 
         # Load image of enemy2
-        self.image = pygame.image.load(enemy2_frame[active_Frame])
+        original_image = pygame.image.load(enemy2_frame[active_Frame])
+        self.image = pygame.transform.scale(original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
 
         # Setting the position of enemy2
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
         self.rect.y = random.randrange(-100, -50)
         self.speed = random.randrange(5, 15)
+        self.hp = 6
 
     # Move enemy2
     def update(self):
         self.rect.y += self.speed
 
-        # If enemy1 go out from screen, reapper on it
+        # If enemy2 go out from screen, reapper on it
         if self.rect.top > SCREEN_HEIGHT:
             self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -50)
-            self.speed = random.randrange(5, 15)
+            self.speed = random.randrange(11, 15)
 
     def damage(self):
         self.hp -= 1
@@ -174,9 +202,22 @@ class Enemy2(pygame.sprite.Sprite):
             return True
 
 
-class Boss_Enemy(pygame.sprite.Sprite):
+class Boss(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+
+        # Load image of boss
+        original_image = pygame.image.load(boss_frame[active_Frame])
+        self.image = pygame.transform.scale(original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
+
+        # Setting the position of boss
+        self.rect = self.image.get_rect()
+        self.rect.centerx = SCREEN_WIDTH / 2
+        self.rect.bottom = 250
+        self.hp = 50
+
+    def update(self):
+        return True
 
 
 ################################## Basic parts of the game ##################################
@@ -202,6 +243,19 @@ bullets = pygame.sprite.Group()
 # Hit ememies group
 hit_enemies = []
 
+# Boss
+bosses = pygame.sprite.Group()
+boss = Boss()
+bosses.add(boss)
+
+# Boss bullets
+
+# Time setting of boss
+waiting_time = 0
+# start_time = pygame.time.get_ticks()
+start_time = None
+boss_delay = 3000
+
 clock = pygame.time.Clock()
 
 # Game_loop
@@ -210,11 +264,13 @@ while running:
     # Process the events
     screen.fill((0, 0, 0))
 
+    # Draw score on surface object
+    score_surface = score_font.render("Score: " + str(score), True, (255, 255, 255))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-        # Shoot bullets
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 # while pygame.time.get_ticks():
@@ -228,7 +284,7 @@ while running:
     enemies1.update()
 
     # Updata enemy2
-    # enemies2.update()
+    enemies2.update()
 
     # Updata bullet
     bullets.update()
@@ -239,13 +295,15 @@ while running:
         for enemy1 in bullet_hits1:
             bullet.kill()
             if enemy1.damage():
+                score += 10
                 new_enemy1 = Enemy1()
                 enemies1.add(new_enemy1)
 
-        bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, True)
-        for bullet_hit2 in bullet_hits2:
+        bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, False)
+        for enemy2 in bullet_hits2:
             bullet.kill()
             if enemy2.damage():
+                score += 50
                 new_enemy2 = Enemy2()
                 enemies2.add(new_enemy2)
 
@@ -260,14 +318,32 @@ while running:
         print("Game Over!!")
         running = False
 
+    # Draw background and scroll
+    bg_y = (bg_y + 8) % 900
+    screen.blit(bg_img, [0, bg_y])
+    screen.blit(bg_img, [0, bg_y - 900])
+
+    # Display Surface objects on screen
+    screen.blit(score_surface, (10, 10))
+
     # Draw the player, enemies, and bullet
     screen.blit(player.image, player.rect)
     enemies1.draw(screen)
     enemies2.draw(screen)
     bullets.draw(screen)
 
-    # screen.blit(bg_img, [0, bg_y])
-    # screen.blit(bg_img, [0, bg_y - 300])
+    # Draw boss
+    if score >= 100:
+        if start_time is None:
+            start_time = pygame.time.get_ticks()
+        # start_time = pygame.time.get_ticks()
+        enemies1.empty()
+        enemies2.empty()
+        waiting_time = pygame.time.get_ticks() - start_time
+        # waiting_time += pygame.time.get_delta()
+        if waiting_time > boss_delay:
+            bosses.draw(screen)
+            bosses.update() # Need to make
 
     # Update screen
     pygame.display.flip()
