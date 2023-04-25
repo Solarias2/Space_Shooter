@@ -2,8 +2,6 @@ import pygame
 import random
 import sys
 from pygame import mixer
-import player
-
 
 
 ################################## Setting of game ##################################
@@ -43,8 +41,11 @@ active_Frame = 0
 menu_font = pygame.font.Font(None, 36)
 
 # Game States
-STATE_MENU = 0
-STATE_GAMEPLAY = 1
+STATE_MENU = 4
+STATE_GAMEPLAY = 0
+STATE_SETTING = 1
+STATE_HELP = 2
+STATE_QUIT = 3
 
 # Current state
 game_state = STATE_MENU
@@ -79,6 +80,50 @@ BOSS_MOVE_INTERVAL = 1000
 
 ################################## Class definition of game object ##################################
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+        # Load image of player
+        original_image = pygame.image.load(player_frame[active_Frame])
+        self.image = pygame.transform.scale(
+            original_image, (original_image.get_width() // 2, original_image.get_height() // 2))
+
+        # Setting the position of player
+        self.rect = self.image.get_rect()
+        self.rect.centerx = SCREEN_WIDTH / 2
+        self.rect.bottom = SCREEN_HEIGHT - 10
+
+        self.speed = 13
+
+    # Moveing the player according to the key input
+    def update(self):
+        key = pygame.key.get_pressed()
+
+        if key[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+
+        if key[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+
+        if key[pygame.K_UP]:
+            self.rect.y -= self.speed
+
+        if key[pygame.K_DOWN]:
+            self.rect.y += self.speed
+
+        # Stay on screen
+        if self.rect.left < 0:
+            self.rect.left = 0
+
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+
+        if self.rect.top < 0:
+            self.rect.top = 0
+
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
 
 
 class Player_Bullet(pygame.sprite.Sprite):
@@ -174,7 +219,7 @@ class Boss(pygame.sprite.Sprite):
         # Load image of boss
         original_image = pygame.image.load(boss_frame[active_Frame])
         self.image = pygame.transform.scale(
-            original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
+        original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
 
         self.last_move_time = pygame.time.get_ticks()
 
@@ -207,50 +252,70 @@ class Boss(pygame.sprite.Sprite):
         elif self.rect.bottom > SCREEN_HEIGHT / 2 + 100:
             self.rect.bottom = SCREEN_HEIGHT / 2 + 100
 
+    # def shoot_bullet(x, y):
+
+
 
 class Enemy_Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("../Assets/Bullet_Enemy.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = 6
+        self.speed = -6
         # self.direction = (math.cos(angle), math.sin(angle))
 
     def update(self):
         # Move the bullet based on its speed and direction
-        dx = self.speed * self.direction[0]
-        dy = self.speed * self.direction[1]
-        self.rect.move_ip(dx, dy)
+        # dx = self.speed * self.direction[0]
+        # dy = self.speed * self.direction[1]
+        # self.rect.move_ip(dx, dy)
 
         # move bullets up
         self.rect.y += self.speed
 
-        if self.rect.bottom < 0:
+        if self.rect.bottom > SCREEN_HEIGHT:
             self.kill()
+
+class Boss_bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load("../Assets/Bullet_Boss.png")
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        return True
 
 
 ################################## Basic parts of the game ##################################
 
-# Make Player
-player = player.Player()
+# Player
+player = Player()
 
-# Make enemy1 group
+# Player_bullet group
+player_bullets = pygame.sprite.Group()
+
+# Enemy1 group
 enemies1 = pygame.sprite.Group()
 for i in range(6):
     enemy1 = Enemy1()
     enemies1.add(enemy1)
 
-# Make enemy2 group
+# Enemy2 group
 enemies2 = pygame.sprite.Group()
 for i in range(3):
     enemy2 = Enemy2()
     enemies2.add(enemy2)
 
-# Make bullet group
-bullets = pygame.sprite.Group()
+# Enemy1_bullet group
+enemy1_bullets = pygame.sprite.Group()
 
-# Hit ememies group
+# Enemy1_bullet group
+enemy1_bullets = pygame.sprite.Group()
+
+# Hit_ememies group
 hit_enemies = []
 
 # Boss
@@ -258,7 +323,7 @@ bosses = pygame.sprite.Group()
 boss = Boss()
 bosses.add(boss)
 
-# Boss bullets
+# Boss_bullets
 
 # Time setting of boss
 waiting_time = 0
@@ -267,7 +332,7 @@ boss_delay = 3000
 
 # Set the max FPS
 clock = pygame.time.Clock()
-FPS = 120
+FPS = 40
 
 # Game_loop
 running = True
@@ -310,7 +375,7 @@ while running:
                     # while pygame.time.get_ticks():
                     bullet = Player_Bullet(
                         player.rect.centerx - 15, player.rect.top)
-                    bullets.add(bullet)
+                    player_bullets.add(bullet)
 
     # Process according to the game state
     if game_state == STATE_MENU:
@@ -334,15 +399,19 @@ while running:
 
         # Updata enemy1
         enemies1.update()
-
+        if enemy1.rect.bottom == 200:
+            bullet_start_time = pygame.time.get_ticks()
+            enemy1_bullet = Enemy_Bullet(enemy1.rect.centerx, enemy1.rect.bottom)
+            enemy1_bullets.add(enemy1_bullet)
+               
         # Updata enemy2
         enemies2.update()
 
         # Updata bullet
-        bullets.update()
+        player_bullets.update()
 
         # Collision judgement
-        for bullet in bullets:
+        for bullet in player_bullets:
             bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, False)
             for enemy1 in bullet_hits1:
                 bullet.kill()
@@ -382,10 +451,11 @@ while running:
         screen.blit(player.image, player.rect)
         enemies1.draw(screen)
         enemies2.draw(screen)
-        bullets.draw(screen)
+        player_bullets.draw(screen)
+        enemy1_bullets.draw(screen)
 
         # Draw boss
-        if score >= 10:
+        if score >= 30:
             if start_time is None:
                 start_time = pygame.time.get_ticks()
                 enemies1.empty()
