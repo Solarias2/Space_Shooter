@@ -346,6 +346,7 @@ while running:
                     # Check which menu option was selected
                     if menu_index == 0:
                         game_state = STATE_GAMEPLAY
+                        pygame.mixer.Sound.play('')
 
                     elif menu_index == 1:
                         pass

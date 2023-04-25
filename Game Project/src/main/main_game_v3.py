@@ -25,7 +25,7 @@ bg_img = pygame.transform.scale(pre_bg_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
 bg_y = 0
 
 # Starts up menu music
-mixer.music.load('../Music/stage_music.wav')
+mixer.music.load('../Music/menu_music.wav')
 mixer.music.play(-1)
 
 # Object image
@@ -293,6 +293,10 @@ while running:
                     # Check which menu option was selected
                     if menu_index == 0:
                         game_state = STATE_GAMEPLAY
+                        mixer.music.stop()
+                        pygame.mixer.Sound.play('../SFX/game_start.wav')
+                        mixer.music.load('../Music/Stage_music.wav')
+                        mixer.music.play(-1)
 
                     elif menu_index == 1:
                         pass
