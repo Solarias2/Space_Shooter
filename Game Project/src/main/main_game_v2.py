@@ -77,10 +77,24 @@ menu_index = 0
 
 # Create a font of score
 score_font = pygame.font.Font(None, 36)
-
 score = 0
+space = 0
 
 BOSS_MOVE_INTERVAL = 1000
+
+# ID for enemies and bullets. Meant to check death Conditions
+ENEMY_1 = 1
+ENEMY_2 = 2
+BOSS = 3
+
+ENEMY_BULLET = 1
+BOSS_BULLET = 2
+
+# Define the death conditions
+death_conditions = {
+    "Colliding with an enemy ship": (ENEMY_1, ENEMY_2, BOSS),
+    "Colliding with an enemy bullet": (ENEMY_BULLET, BOSS_BULLET)
+}
 
 
 ################################## Class definition of game object ##################################
@@ -154,11 +168,14 @@ class Player_Bullet(pygame.sprite.Sprite):
 
 
 class Enemy1(pygame.sprite.Sprite):
+    global enemy1_bullets
+
     def __init__(self):
         super().__init__()
 
         # Load image of enemy1
         self.image = pygame.image.load(enemy1_frame[active_Frame])
+        self.type = ENEMY_1
 
         # Setting the position of enemy1
         self.rect = self.image.get_rect()
@@ -181,7 +198,8 @@ class Enemy1(pygame.sprite.Sprite):
             self.rect.y = random.randrange(-100, -50)
             self.speed = random.randrange(8, 12)
 
-        if self.rect.bottom == 200:
+        # Shoot bullets
+        if self.rect.bottom % 100 == 0:
             bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery)
             enemy1_bullets.add(bullet)
 
@@ -190,17 +208,17 @@ class Enemy1(pygame.sprite.Sprite):
         if self.hp == 0:
             self.kill()
             return True
-        
-    def shoot(self):
+
+    # def shoot(self):
         # current_time = pygame.time.get_ticks()
         # if current_time - self.last_shoot > self.shoot_delay:
         #     self.last_shoot = current_time
         #     bullet = Enemy_Bullet()
         #     enemy1_bullets.add(bullet)
 
-        if self.rect.bottom > 200:
-            bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery)
-            enemy1_bullets.add(bullet)
+        # if self.rect.bottom > 100:
+        #     bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery)
+        #     enemy1_bullets.add(bullet)
 
 
 class Enemy2(pygame.sprite.Sprite):
@@ -211,6 +229,7 @@ class Enemy2(pygame.sprite.Sprite):
         original_image = pygame.image.load(enemy2_frame[active_Frame])
         self.image = pygame.transform.scale(
             original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
+        self.type = ENEMY_2
 
         # Setting the position of enemy2
         self.rect = self.image.get_rect()
@@ -236,6 +255,28 @@ class Enemy2(pygame.sprite.Sprite):
             return True
 
 
+class Enemy_Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load("../Assets/Bullet_Enemy.png")
+        self.type = ENEMY_BULLET
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = 20
+        # self.direction = (math.cos(angle), math.sin(angle))
+
+    def update(self):
+        # Move the bullet based on its speed and direction
+        # dx = self.speed * self.direction[0]
+        # dy = self.speed * self.direction[1]
+        # self.rect.move_ip(dx, dy)
+
+        # move bullets up
+        self.rect.y += self.speed
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.kill()
+
+
 class Boss(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -243,7 +284,8 @@ class Boss(pygame.sprite.Sprite):
         # Load image of boss
         original_image = pygame.image.load(boss_frame[active_Frame])
         self.image = pygame.transform.scale(
-        original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
+            original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
+        self.type = BOSS
 
         self.last_move_time = pygame.time.get_ticks()
 
@@ -254,8 +296,6 @@ class Boss(pygame.sprite.Sprite):
         self.hp = 50
 
     def update(self):
-        self.delay = clock.tick(10000)
-
         # Check if it's time to move the boss
         now = pygame.time.get_ticks()
         if now - self.last_move_time >= BOSS_MOVE_INTERVAL:
@@ -279,27 +319,6 @@ class Boss(pygame.sprite.Sprite):
     # def shoot_bullet(x, y):
 
 
-class Enemy_Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.image.load("../Assets/Bullet_Enemy.png")
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
-        self.speed = 20
-        # self.direction = (math.cos(angle), math.sin(angle))
-
-    def update(self):
-        # Move the bullet based on its speed and direction
-        # dx = self.speed * self.direction[0]
-        # dy = self.speed * self.direction[1]
-        # self.rect.move_ip(dx, dy)
-
-        # move bullets up
-        self.rect.y += self.speed
-
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.kill()
-
 class Boss_bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -310,6 +329,25 @@ class Boss_bullet(pygame.sprite.Sprite):
 
     def update(self):
         return True
+    
+
+################################## Functions ##################################
+
+def music_change(Music):
+    mixer.music.stop()
+    mixer.music.unload()
+    mixer.music.load(Music)
+    mixer.music.play(-1)
+
+
+def reset_game():
+    player_bullets.empty()
+    enemies.empty()
+    bosses.empty()
+    enemy1_bullets.empty()
+    enemy2_bullets.empty()
+    player.rect.centerx = SCREEN_WIDTH / 2
+    player.rect.bottom = SCREEN_HEIGHT - 10
 
 
 ################################## Basic parts of the game ##################################
@@ -320,17 +358,8 @@ player = Player()
 # Player_bullet group
 player_bullets = pygame.sprite.Group()
 
-# Enemy1 group
-enemies1 = pygame.sprite.Group()
-for i in range(6):
-    enemy1 = Enemy1()
-    enemies1.add(enemy1)
-
-# Enemy2 group
-enemies2 = pygame.sprite.Group()
-for i in range(3):
-    enemy2 = Enemy2()
-    enemies2.add(enemy2)
+# Enemy group
+enemies = pygame.sprite.Group()
 
 # Enemy1_bullet group
 enemy1_bullets = pygame.sprite.Group()
@@ -344,18 +373,17 @@ hit_enemies = []
 # Boss
 bosses = pygame.sprite.Group()
 boss = Boss()
-bosses.add(boss)
 
 # Boss_bullets
 
 # Time setting of boss
-waiting_time = 0
-start_time = None
-boss_delay = 3000
 
 # Set the max FPS
 clock = pygame.time.Clock()
 FPS = 40
+
+# Key
+# key = pygame.key.get_pressed()
 
 # Game_loop
 running = True
@@ -369,6 +397,7 @@ while running:
 
         elif event.type == pygame.KEYDOWN:
             if game_state == STATE_MENU:
+
                 if event.key == pygame.K_UP:
                     # Move the menu index up
                     menu_index = (menu_index - 1) % len(menu_items)
@@ -381,11 +410,25 @@ while running:
                     # Check which menu option was selected
                     if menu_index == 0:
                         game_state = STATE_GAMEPLAY
-                        mixer.music.stop()
-                        mixer.music.unload()
+                        reset_game()
+                        Start_Score = 50
+                        multiplier = 2
+                        score = 0
+                        waiting_time = 0
+                        start_time = None
+                        boss_delay = 3000
+                        for i in range(6):
+                            enemy1 = Enemy1()
+                            enemies.add(enemy1)
+
+                        for i in range(3):
+                            enemy2 = Enemy2()
+                            enemies.add(enemy2)
+
+                        bosses.add(boss)
+
                         pygame.mixer.Sound.play(start_sound)
-                        mixer.music.load('../Music/stage_music.wav')
-                        mixer.music.play(-1)
+                        music_change('../Music/stage_music.wav')
 
                     elif menu_index == 1:
                         pass
@@ -400,11 +443,17 @@ while running:
             if game_state == STATE_GAMEPLAY:
                 # Shoot bullets
                 if event.key == pygame.K_SPACE:
-                    # while pygame.time.get_ticks():
                     bullet = Player_Bullet(
                         player.rect.centerx - 15, player.rect.top)
                     player_bullets.add(bullet)
                     pygame.mixer.Sound.play(bullet_sound)
+
+                # key = pygame.key.get_pressed()
+                # space = (space + 4) * key[pygame.K_SPACE]
+                # if space % 1 == 0:
+                #     bullet = Player_Bullet(player.rect.centerx - 15, player.rect.top)
+                #     player_bullets.add(bullet)
+                #     pygame.mixer.Sound.play(bullet_sound)
 
     # Process according to the game state
     if game_state == STATE_MENU:
@@ -415,8 +464,7 @@ while running:
                 screen.blit(item[1], item[2])
             else:
                 # Unselected items are drawn in gray
-                screen.blit(menu_font.render(
-                    item[0], True, (128, 128, 128)), item[2])
+                screen.blit(menu_font.render(item[0], True, (128, 128, 128)), item[2])
 
     elif game_state == STATE_GAMEPLAY:
         # Draw score on surface object
@@ -427,7 +475,7 @@ while running:
         player.update()
 
         # Updata enemy1
-        enemies1.update()
+        enemies.update()
         enemy1_bullets.update()
 
         # Shoot enemy1's bullets
@@ -437,44 +485,45 @@ while running:
         #         enemy1_bullets.add(enemy1_bullet)
         #     enemy1_bullets.update()
 
-        # Updata enemy2
-        enemies2.update()
-
         # Updata bullet
         player_bullets.update()
 
-        # Collision judgement
+        # Collision judgement for Player
+        # for bullet in player_bullets:
+        #     bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies, False)
+        #     for enemy1 in bullet_hits1:
+        #         bullet.kill()
+        #         pygame.mixer.Sound.play(Hit_sound)
+        #         if enemy1.damage():
+        #             score += 10
+        #             new_enemy1 = Enemy1()
+        #             enemies.add(new_enemy1)
+
+        #     bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies, False)
+        #     for enemy2 in bullet_hits2:
+        #         bullet.kill()
+        #         pygame.mixer.Sound.play(Hit_sound)
+        #         if enemy2.damage():
+        #             score += 50
+        #             new_enemy2 = Enemy2()
+        #             enemies.add(new_enemy2)
+
         for bullet in player_bullets:
-            bullet_hits1 = pygame.sprite.spritecollide(bullet, enemies1, False)
-            for enemy1 in bullet_hits1:
+            bullet_hits = pygame.sprite.spritecollide(bullet, enemies, False)
+            for enemy in bullet_hits:
                 bullet.kill()
                 pygame.mixer.Sound.play(Hit_sound)
-                if enemy1.damage():
-                    score += 10
-                    new_enemy1 = Enemy1()
-                    enemies1.add(new_enemy1)
-
-            bullet_hits2 = pygame.sprite.spritecollide(bullet, enemies2, False)
-            for enemy2 in bullet_hits2:
-                bullet.kill()
-                pygame.mixer.Sound.play(Hit_sound)
-                if enemy2.damage():
-                    score += 50
-                    new_enemy2 = Enemy2()
-                    enemies2.add(new_enemy2)
-
-        # Gameover
-        player_hits1 = pygame.sprite.spritecollide(player, enemies1, True)
-        if player_hits1:
-            pygame.mixer.Sound.play(death_sound)
-            print("Game Over!!")
-            running = False
-
-        player_hits2 = pygame.sprite.spritecollide(player, enemies2, True)
-        if player_hits2:
-            pygame.mixer.Sound.play(death_sound)
-            print("Game Over!!")
-            running = False
+                if isinstance(enemy, Enemy1):
+                    if enemy.damage():
+                        score += 10
+                        new_enemy1 = Enemy1()
+                        enemies.add(new_enemy1)
+                    
+                elif isinstance(enemy, Enemy2):
+                    if enemy.damage():
+                        score += 50
+                        new_enemy2 = Enemy2()
+                        enemies.add(new_enemy2)
 
         # Draw background and scroll
         bg_y = (bg_y + 8) % 900
@@ -486,25 +535,51 @@ while running:
 
         # Draw the player, enemies, and bullet
         screen.blit(player.image, player.rect)
-        enemies1.draw(screen)
-        enemies2.draw(screen)
+        enemies.draw(screen)
         player_bullets.draw(screen)
         enemy1_bullets.draw(screen)
 
         # Draw boss
-        if score >= 30:
-            if start_time is None:
-                pygame.mixer.Sound.play(Boss_Incoming)
+        if score >= Start_Score:
+            boss_music = pygame.mixer.Sound(Boss_Incoming)
+            boss_music.play()
+            # pygame.mixer.Sound.play(Boss_Incoming)
+            # boss_music = pygame.mixer.music.play()
+            if start_time == None:
+                enemies.empty()
                 start_time = pygame.time.get_ticks()
-                enemies1.empty()
-                enemies2.empty()
 
             waiting_time = pygame.time.get_ticks() - start_time
-            
+
             if waiting_time > boss_delay:
+                boss_music.stop()
+                # mixer.music.stop(Boss_Incoming)
+                # boss_music.stop()
                 bosses.draw(screen)
 
-            bosses.update()  # Need to make
+                bosses.update()
+
+        # Gameover
+        for enemy in enemies:
+            if player.rect.colliderect(enemy.rect):
+                if enemy.type in death_conditions["Colliding with an enemy ship"]:
+                    pygame.mixer.Sound.play(death_sound)
+                    game_state = STATE_MENU
+                    music_change('../Music/menu_music.wav')
+
+        for bullet in enemy1_bullets:
+            if player.rect.colliderect(bullet.rect):
+                if bullet.type in death_conditions["Colliding with an enemy bullet"]:
+                    pygame.mixer.Sound.play(death_sound)
+                    game_state = STATE_MENU
+                    music_change('../Music/menu_music.wav')
+
+        for boss in bosses:
+            if player.rect.colliderect(boss.rect):
+                if boss.type in death_conditions["Colliding with an enemy ship"]:
+                    pygame.mixer.Sound.play(death_sound)
+                    game_state = STATE_MENU
+                    music_change('../Music/menu_music.wav')
 
     # Update screen
     pygame.display.flip()

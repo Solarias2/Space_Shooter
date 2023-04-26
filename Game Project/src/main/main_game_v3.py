@@ -172,6 +172,11 @@ class Enemy1(pygame.sprite.Sprite):
             self.rect.y = random.randrange(-100, -50)
             self.speed = random.randrange(8, 12)
 
+        # Shoot bullets
+        if self.rect.bottom % 100 == 0:
+            bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery)
+            enemy1_bullets.add(bullet)
+
     def damage(self):
         self.hp -= 1
         if self.hp == 0:
@@ -262,7 +267,7 @@ class Enemy_Bullet(pygame.sprite.Sprite):
         self.image = pygame.image.load("../Assets/Bullet_Enemy.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = -6
+        self.speed = 20
         # self.direction = (math.cos(angle), math.sin(angle))
 
     def update(self):
@@ -399,10 +404,7 @@ while running:
 
         # Updata enemy1
         enemies1.update()
-        if enemy1.rect.bottom == 200:
-            bullet_start_time = pygame.time.get_ticks()
-            enemy1_bullet = Enemy_Bullet(enemy1.rect.centerx, enemy1.rect.bottom)
-            enemy1_bullets.add(enemy1_bullet)
+        enemy1_bullets.update()
                
         # Updata enemy2
         enemies2.update()
