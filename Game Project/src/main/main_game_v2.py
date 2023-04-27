@@ -118,6 +118,9 @@ class Player(pygame.sprite.Sprite):
         self.bullet_delay = 150
         self.last_shot = pygame.time.get_ticks()
 
+        # Player"s HP
+        self.hp = 10
+
         # Setting speed
         self.speed = 15
 
@@ -162,6 +165,11 @@ class Player(pygame.sprite.Sprite):
             bullet = Player_Bullet(self.rect.centerx - 15, self.rect.top)
             player_bullets.add(bullet)
             pygame.mixer.Sound.play(bullet_sound)
+
+    def damage(self):
+        self.hp -= 1
+        if self.hp == 0:
+            return True
 
 
 class Player_Bullet(pygame.sprite.Sprite):
@@ -483,6 +491,8 @@ while running:
                         waiting_time = 0
                         start_time = None
                         boss_delay = 3000
+                        player.hp = 20
+                        boss.hp = 50
                         for i in range(6):
                             enemy1 = Enemy1()
                             enemies.add(enemy1)
@@ -631,22 +641,28 @@ while running:
             if player.rect.colliderect(enemy.rect):
                 if enemy.type in death_conditions["Colliding with an enemy ship"]:
                     pygame.mixer.Sound.play(death_sound)
-                    game_state = STATE_MENU
-                    music_change('../Music/menu_music.wav')
+                    if player.damage():
+                        pygame.mixer.Sound.play(death_sound)
+                        game_state = STATE_MENU
+                        music_change('../Music/menu_music.wav')
 
         for bullet in enemy1_bullets:
             if player.rect.colliderect(bullet.rect):
                 if bullet.type in death_conditions["Colliding with an enemy bullet"]:
                     pygame.mixer.Sound.play(death_sound)
-                    game_state = STATE_MENU
-                    music_change('../Music/menu_music.wav')
+                    if player.damage():
+                        pygame.mixer.Sound.play(death_sound)
+                        game_state = STATE_MENU
+                        music_change('../Music/menu_music.wav')
 
         for bullet in enemy2_bullets:
             if player.rect.colliderect(bullet.rect):
                 if bullet.type in death_conditions["Colliding with an enemy bullet"]:
                     pygame.mixer.Sound.play(death_sound)
-                    game_state = STATE_MENU
-                    music_change('../Music/menu_music.wav')
+                    if player.damage():
+                        pygame.mixer.Sound.play(death_sound)
+                        game_state = STATE_MENU
+                        music_change('../Music/menu_music.wav')
 
     # Update screen
     pygame.display.flip()
