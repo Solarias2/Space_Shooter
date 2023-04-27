@@ -39,17 +39,19 @@ boss_frame = ['../Assets/Boss.png']
 
 active_Frame = 0
 
-# Create a font of menu option
+# Create a font of menu option and gameover option
 menu_font = pygame.font.Font(None, 36)
 
+gameover_font = pygame.font.Font(None, 36)
 # Game States
 STATE_MENU = 0
 STATE_GAMEPLAY = 1
+STATE_GAMEOVER = 2
 
 # Current state
 game_state = STATE_MENU
 
-# Define munu options
+# Define menu options
 menu_options = [
     "Start Game",
     "Settings",
@@ -57,7 +59,15 @@ menu_options = [
     "Quit"
 ]
 
+# define game over options
+gameover_options = [
+    "Retry",
+    "Save Leaderboard",
+    "Quit"
+]
+
 # Loop through the menu options and create a menu item for each one
+# Same thing for gameover options
 menu_items = []
 for index, option in enumerate(menu_options):
     text = menu_font.render(option, True, (255, 255, 255))
@@ -66,8 +76,19 @@ for index, option in enumerate(menu_options):
     rect.centery = screen.get_rect().centery + index * 50
     menu_items.append((option, text, rect))
 
-# Set the default menu option to the first one
+
+gameover_items = []
+for index, option in enumerate(gameover_options):
+    text = menu_font.render(option, True, (255, 255, 255))
+    rect = text.get_rect()
+    rect.centerx = screen.get_rect().centerx
+    rect.centery = screen.get_rect().centery + index * 50
+    gameover_items.append((option, text, rect))
+# Set the default menu option and gameover option to the first one
+# Intended to switch between indecies, Game over intends to have 3
+# possible ones. Retry, quit and possibly leaderboard
 menu_index = 0
+gameover_index = 0
 
 # Create a font of score
 score_font = pygame.font.Font(None, 36)
@@ -294,6 +315,7 @@ while running:
                     if menu_index == 0:
                         game_state = STATE_GAMEPLAY
                         mixer.music.stop()
+                        mixer.music.unload()
                         pygame.mixer.Sound.play('../SFX/game_start.wav')
                         mixer.music.load('../Music/Stage_music.wav')
                         mixer.music.play(-1)
@@ -367,12 +389,12 @@ while running:
         player_hits1 = pygame.sprite.spritecollide(player, enemies1, True)
         if player_hits1:
             print("Game Over!!")
-            running = False
+            game_state = STATE_GAMEOVER
 
         player_hits2 = pygame.sprite.spritecollide(player, enemies2, True)
         if player_hits2:
             print("Game Over!!")
-            running = False
+            game_state = STATE_GAMEOVER
 
         # Draw background and scroll
         bg_y = (bg_y + 8) % 900
