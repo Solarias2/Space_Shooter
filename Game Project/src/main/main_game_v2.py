@@ -119,7 +119,7 @@ class Player(pygame.sprite.Sprite):
         self.last_shot = pygame.time.get_ticks()
 
         # Setting speed
-        self.speed = 16
+        self.speed = 15
 
         # Shoot_flag
         self.shoot_flag = False
