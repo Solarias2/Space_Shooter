@@ -514,7 +514,7 @@ while running:
                     # player_bullets.add(bullet)
                     # pygame.mixer.Sound.play(bullet_sound)
                     player.shoot_flag = True
-        
+                    
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 player.shoot_flag = False
