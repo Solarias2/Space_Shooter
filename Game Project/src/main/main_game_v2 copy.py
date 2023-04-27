@@ -80,9 +80,7 @@ score_font = pygame.font.Font(None, 36)
 score = 0
 space = 0
 
-# Boss time setting
 BOSS_MOVE_INTERVAL = 1000
-BOSS_SHOOT_INTERVAL = 1000
 
 # ID for enemies and bullets. Meant to check death Conditions
 ENEMY_1 = 1
@@ -115,14 +113,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = SCREEN_WIDTH / 2
         self.rect.bottom = SCREEN_HEIGHT - 10
 
-        self.bullet_delay = 150
-        self.last_shot = pygame.time.get_ticks()
-
-        # Setting speed
-        self.speed = 15
-
-        # Shoot_flag
-        self.shoot_flag = False
+        self.speed = 13
 
     # Moveing the player according to the key input
     def update(self):
@@ -153,16 +144,6 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
 
-        self.shoot()
-
-    def shoot(self):
-        now = pygame.time.get_ticks()
-        if self.shoot_flag and now - self.last_shot >= self.bullet_delay:
-            self.last_shot = now
-            bullet = Player_Bullet(self.rect.centerx - 15, self.rect.top)
-            player_bullets.add(bullet)
-            pygame.mixer.Sound.play(bullet_sound)
-
 
 class Player_Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -176,7 +157,7 @@ class Player_Bullet(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        self.speed = -14
+        self.speed = -10
 
     def update(self):
         # move bullets up
@@ -204,11 +185,10 @@ class Enemy1(pygame.sprite.Sprite):
         # Setting speed
         self.speed = random.randrange(8, 12)
 
-        # Enemy1's HP
+        # Enemy2's HP
         self.hp = 3
-
-        # Shoot flag. If it is 0, bullet is not be shot yet. If it is 1, bullet is already shot.
-        self.shoot_flag = 0
+        self.shoot_delay = 2000
+        self.last_shoot = 0
 
     # Move enemy1
     def update(self):
@@ -220,23 +200,27 @@ class Enemy1(pygame.sprite.Sprite):
             self.rect.y = random.randrange(-100, -50)
             self.speed = random.randrange(8, 12)
 
-            # Reset flag
-            self.shoot_flag = False
-
         # Shoot bullets
-        self.shoot(15)
-
-    def shoot(self, speed):
-        if self.rect.bottom > 300 and self.shoot_flag == False:
-            bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery, speed)
+        if self.rect.bottom % 100 == 0:
+            bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery)
             enemy1_bullets.add(bullet)
-            self.shoot_flag = True
 
     def damage(self):
         self.hp -= 1
         if self.hp == 0:
             self.kill()
             return True
+
+    # def shoot(self):
+        # current_time = pygame.time.get_ticks()
+        # if current_time - self.last_shoot > self.shoot_delay:
+        #     self.last_shoot = current_time
+        #     bullet = Enemy_Bullet()
+        #     enemy1_bullets.add(bullet)
+
+        # if self.rect.bottom > 100:
+        #     bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery)
+        #     enemy1_bullets.add(bullet)
 
 
 class Enemy2(pygame.sprite.Sprite):
@@ -255,14 +239,10 @@ class Enemy2(pygame.sprite.Sprite):
         self.rect.y = random.randrange(-100, -50)
 
         # Setting speed
-        self.speed = random.randrange(6, 9)
+        self.speed = random.randrange(5, 15)
 
         # Enemy2's HP
         self.hp = 6
-
-        # Shoot flag. If it is 0, bullet is not be shot yet. If it is 1, bullet is already shot.
-        self.shoot_flag = False
-        self.second_shoot_flag = False
 
     # Move enemy2
     def update(self):
@@ -272,24 +252,7 @@ class Enemy2(pygame.sprite.Sprite):
         if self.rect.top > SCREEN_HEIGHT:
             self.rect.x = random.randrange(SCREEN_WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -50)
-            self.speed = random.randrange(6, 9)
-
-            # Reset flag
-            self.shoot_flag = self.second_shoot_flag = False
-
-        # Shoot bullets
-        self.shoot(14)
-
-    def shoot(self, speed):
-        if self.rect.bottom > 100 and self.shoot_flag == False:
-            bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery, speed)
-            enemy2_bullets.add(bullet)
-            self.shoot_flag = True
-
-        # if self.rect.bottom > 300 and self.second_shoot_flag == 0:
-        #     bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery, 18)
-        #     enemy2_bullets.add(bullet)
-        #     self.second_shoot_flag = 1
+            self.speed = random.randrange(11, 15)
 
     def damage(self):
         self.hp -= 1
@@ -299,16 +262,22 @@ class Enemy2(pygame.sprite.Sprite):
 
 
 class Enemy_Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("../Assets/Bullet_Enemy.png")
         self.type = ENEMY_BULLET
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.speed = speed
+        self.speed = 20
+        # self.direction = (math.cos(angle), math.sin(angle))
 
     def update(self):
-        # move bullets down
+        # Move the bullet based on its speed and direction
+        # dx = self.speed * self.direction[0]
+        # dy = self.speed * self.direction[1]
+        # self.rect.move_ip(dx, dy)
+
+        # move bullets up
         self.rect.y += self.speed
         if self.rect.bottom > SCREEN_HEIGHT:
             self.kill()
@@ -321,12 +290,10 @@ class Boss(pygame.sprite.Sprite):
         # Load image of boss
         original_image = pygame.image.load(boss_frame[active_Frame])
         self.image = pygame.transform.scale(
-            original_image, (original_image.get_width() * 1.5, original_image.get_height() * 1.5))
+            original_image, (original_image.get_width() * 2, original_image.get_height() * 2))
         self.type = BOSS
 
         self.last_move_time = pygame.time.get_ticks()
-        self.bullet_delay = 1500
-        self.last_shot = pygame.time.get_ticks()
 
         # Setting the position of boss
         self.rect = self.image.get_rect()
@@ -343,34 +310,19 @@ class Boss(pygame.sprite.Sprite):
             self.last_move_time = now
 
             # Move the boss in a random direction
-            self.speedx = random.randint(-18, 18)
+            self.speedx = random.randint(-15, 15)
             self.speedy = random.randint(-10, 10)
-
         self.rect.move_ip(self.speedx, self.speedy)
 
         # Keep the boss on the screen
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
+        elif self.rect.right > SCREEN_WIDTH:
             self.rect.right = SCREEN_WIDTH
         if self.rect.top < 0:
             self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT / 2 + 100:
+        elif self.rect.bottom > SCREEN_HEIGHT / 2 + 100:
             self.rect.bottom = SCREEN_HEIGHT / 2 + 100
-
-        # Shoot bullets
-        self.shoot(15)
-
-    def shoot(self, speed):
-        now = pygame.time.get_ticks()
-        if now - self.last_shot >= self.bullet_delay:
-            self.last_shot = now
-            Main_bullet = Boss_bullet(self.rect.centerx, self.rect.centery, speed)
-            boss_bullets.add(Main_bullet)
-            Right_bullet = Enemy_Bullet(self.rect.centerx + 70, self.rect.centery, speed)
-            boss_bullets.add(Right_bullet)
-            Left_bullet = Enemy_Bullet(self.rect.centerx - 50, self.rect.centery, speed)
-            boss_bullets.add(Left_bullet)
 
     def damage(self):
         self.hp -= 1
@@ -378,22 +330,20 @@ class Boss(pygame.sprite.Sprite):
             self.kill()
             return True
 
+    # def shoot_bullet(x, y):
+
 
 class Boss_bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y):
         super().__init__()
         self.image = pygame.image.load("../Assets/Bullet_Boss.png")
-        self.type = BOSS_BULLET
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.speed = speed
 
     def update(self):
-        # move bullets down
-        self.rect.y += self.speed
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.kill()
+        return True
+    
 
 ################################## Functions ##################################
 
@@ -410,7 +360,6 @@ def reset_game():
     bosses.empty()
     enemy1_bullets.empty()
     enemy2_bullets.empty()
-    boss_bullets.empty()
     player.rect.centerx = SCREEN_WIDTH / 2
     player.rect.bottom = SCREEN_HEIGHT - 10
 
@@ -440,7 +389,6 @@ bosses = pygame.sprite.Group()
 boss = Boss()
 
 # Boss_bullets
-boss_bullets = pygame.sprite.Group()
 
 # Time setting of boss
 
@@ -509,15 +457,17 @@ while running:
             if game_state == STATE_GAMEPLAY:
                 # Shoot bullets
                 if event.key == pygame.K_SPACE:
-                    # bullet = Player_Bullet(
-                    #     player.rect.centerx - 15, player.rect.top)
-                    # player_bullets.add(bullet)
-                    # pygame.mixer.Sound.play(bullet_sound)
-                    player.shoot_flag = True
-        
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_SPACE:
-                player.shoot_flag = False
+                    bullet = Player_Bullet(
+                        player.rect.centerx - 15, player.rect.top)
+                    player_bullets.add(bullet)
+                    pygame.mixer.Sound.play(bullet_sound)
+
+                # key = pygame.key.get_pressed()
+                # space = (space + 4) * key[pygame.K_SPACE]
+                # if space % 1 == 0:
+                #     bullet = Player_Bullet(player.rect.centerx - 15, player.rect.top)
+                #     player_bullets.add(bullet)
+                #     pygame.mixer.Sound.play(bullet_sound)
 
     # Process according to the game state
     if game_state == STATE_MENU:
@@ -528,8 +478,7 @@ while running:
                 screen.blit(item[1], item[2])
             else:
                 # Unselected items are drawn in gray
-                screen.blit(menu_font.render(
-                    item[0], True, (128, 128, 128)), item[2])
+                screen.blit(menu_font.render(item[0], True, (128, 128, 128)), item[2])
 
     elif game_state == STATE_GAMEPLAY:
         # Draw score on surface object
@@ -541,11 +490,17 @@ while running:
 
         # Updata enemy1
         enemies.update()
-
-        # Updata bullets
-        player_bullets.update()
         enemy1_bullets.update()
-        enemy2_bullets.update()
+
+        # Shoot enemy1's bullets
+        # for enemy1 in enemies1:
+        #     if enemy1.rect.bottom % 60 == 0:
+        #         enemy1_bullet = Enemy_Bullet(enemy1.rect.centerx, enemy1.rect.centery)
+        #         enemy1_bullets.add(enemy1_bullet)
+        #     enemy1_bullets.update()
+
+        # Updata bullet
+        player_bullets.update()
 
         # Collision judgement for Player
         for bullet in player_bullets:
@@ -558,7 +513,7 @@ while running:
                         score += 10
                         new_enemy1 = Enemy1()
                         enemies.add(new_enemy1)
-
+                    
                 elif isinstance(enemy, Enemy2):
                     if enemy.damage():
                         score += 50
@@ -578,7 +533,6 @@ while running:
         enemies.draw(screen)
         player_bullets.draw(screen)
         enemy1_bullets.draw(screen)
-        enemy2_bullets.draw(screen)
 
         # Draw boss
         if score >= Start_Score:
@@ -597,33 +551,10 @@ while running:
                 # mixer.music.stop(Boss_Incoming)
                 # boss_music.stop()
                 bosses.draw(screen)
-                boss_bullets.draw(screen)
 
                 bosses.update()
-                boss_bullets.update()
 
             # Collision judgement for Boss
-            for bullet in player_bullets:
-                bullet_hits = pygame.sprite.spritecollide(bullet, bosses, False)
-                for boss in bullet_hits:
-                    bullet.kill()
-                    pygame.mixer.Sound.play(Hit_sound)
-                    if boss.damage():
-                        score += 1000
-
-            for boss in bosses:
-                if player.rect.colliderect(boss.rect):
-                    if boss.type in death_conditions["Colliding with an enemy ship"]:
-                        pygame.mixer.Sound.play(death_sound)
-                        game_state = STATE_MENU
-                        music_change('../Music/menu_music.wav')
-
-            for bullet in boss_bullets:
-                if player.rect.colliderect(bullet.rect):
-                    if bullet.type in death_conditions["Colliding with an enemy bullet"]:
-                        pygame.mixer.Sound.play(death_sound)
-                        game_state = STATE_MENU
-                        music_change('../Music/menu_music.wav')
 
 
         # Gameover
@@ -641,9 +572,9 @@ while running:
                     game_state = STATE_MENU
                     music_change('../Music/menu_music.wav')
 
-        for bullet in enemy2_bullets:
-            if player.rect.colliderect(bullet.rect):
-                if bullet.type in death_conditions["Colliding with an enemy bullet"]:
+        for boss in bosses:
+            if player.rect.colliderect(boss.rect):
+                if boss.type in death_conditions["Colliding with an enemy ship"]:
                     pygame.mixer.Sound.play(death_sound)
                     game_state = STATE_MENU
                     music_change('../Music/menu_music.wav')
