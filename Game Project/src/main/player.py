@@ -1,4 +1,7 @@
 import pygame
+from variable import SCREEN_WIDTH, SCREEN_HEIGHT, active_Frame, player_frame, bullet_sound, player_bullets
+from bullet import Player_Bullet
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -13,7 +16,17 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = SCREEN_WIDTH / 2
         self.rect.bottom = SCREEN_HEIGHT - 10
 
-        self.speed = 13
+        self.bullet_delay = 150
+        self.last_shot = pygame.time.get_ticks()
+
+        # Player"s HP
+        self.hp = 10
+
+        # Setting speed
+        self.speed = 15
+
+        # Shoot_flag
+        self.shoot_flag = False
 
     # Moveing the player according to the key input
     def update(self):
@@ -44,24 +57,17 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
 
+        self.shoot()
 
-class Player_Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
+    def shoot(self):
+        now = pygame.time.get_ticks()
+        if self.shoot_flag and now - self.last_shot >= self.bullet_delay:
+            self.last_shot = now
+            bullet = Player_Bullet(self.rect.centerx - 15, self.rect.top)
+            player_bullets.add(bullet)
+            pygame.mixer.Sound.play(bullet_sound)
 
-        # Load image of bullet
-        self.image = pygame.image.load("../Assets/Bullet_Player.png")
-
-        # Setting the position of bullet
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-        self.speed = -10
-
-    def update(self):
-        # move bullets up
-        self.rect.y += self.speed
-
-        if self.rect.bottom < 0:
-            self.kill()
+    def damage(self):
+        self.hp -= 1
+        if self.hp == 0:
+            return True
