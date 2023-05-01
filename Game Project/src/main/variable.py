@@ -33,6 +33,8 @@ STATE_GAMEPLAY = 0
 STATE_SETTING = 1
 STATE_HELP = 2
 STATE_QUIT = 3
+STATE_CLEAR = 5
+STATE_DEAD = 6
 
 # Current state
 game_state = STATE_MENU
@@ -57,10 +59,16 @@ for index, option in enumerate(menu_options):
 # Set the default menu option to the first one
 menu_index = 0
 
-# Create a font of score
+# Difficulty
+MED_DIFF = 0
+EASY_DIFF = 1
+HARD_DIFF = 2
+
+# Create a font of score and game clear
 score_font = pygame.font.Font(None, 36)
 score = 0
-space = 0
+
+clear_font = pygame.font.Font(None, 70)
 
 # Boss time setting
 BOSS_MOVE_INTERVAL = 1000
@@ -97,13 +105,15 @@ player_bullets = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
 # Enemy1_bullet group
-enemy1_bullets = pygame.sprite.Group()
-
-# Enemy2_bullet group
-enemy2_bullets = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
 
 # Hit_ememies group
 hit_enemies = []
 
 # Boss_bullets
 boss_bullets = pygame.sprite.Group()
+
+#Text being used in the Game
+HELP_MENU_TEXT = '遊び方\n1. 矢印キーでプレイヤーを移動，スペースキーで弾を発射\n2. スコアが50を超えたら，ボスが出現\n3. 5回攻撃を受けると，ゲームオーバー\n4. 難易度は，イージー，ミディアム，ハードの3つ\n\nエネミーは3種類\nエネミー1を倒すと10点，エネミー2を倒すと50点'
+GAME_OVER_TEXT = 'ゲームオーバー!!\nもう一度遊びますか？'
+GAME_CLEAR_TEXT = 'クリアおめでとう!!!!!'

@@ -373,11 +373,14 @@ class Boss(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
         if now - self.last_shot >= self.bullet_delay:
             self.last_shot = now
-            Main_bullet = Boss_bullet(self.rect.centerx, self.rect.centery, speed)
+            Main_bullet = Boss_bullet(
+                self.rect.centerx, self.rect.centery, speed)
             boss_bullets.add(Main_bullet)
-            Right_bullet = Enemy_Bullet(self.rect.centerx + 70, self.rect.centery, speed)
+            Right_bullet = Enemy_Bullet(
+                self.rect.centerx + 70, self.rect.centery, speed)
             boss_bullets.add(Right_bullet)
-            Left_bullet = Enemy_Bullet(self.rect.centerx - 50, self.rect.centery, speed)
+            Left_bullet = Enemy_Bullet(
+                self.rect.centerx - 50, self.rect.centery, speed)
             boss_bullets.add(Left_bullet)
 
     def damage(self):
@@ -404,6 +407,7 @@ class Boss_bullet(pygame.sprite.Sprite):
             self.kill()
 
 ################################## Functions ##################################
+
 
 def music_change(Music):
     mixer.music.stop()
@@ -520,7 +524,7 @@ while running:
                 # Shoot bullets
                 if event.key == pygame.K_SPACE:
                     player.shoot_flag = True
-                    
+
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 player.shoot_flag = False
@@ -607,7 +611,8 @@ while running:
             # Collision judgement for Boss
             # For player bullets and boss
             for bullet in player_bullets:
-                bullet_hits = pygame.sprite.spritecollide(bullet, bosses, False)
+                bullet_hits = pygame.sprite.spritecollide(
+                    bullet, bosses, False)
                 for boss in bullet_hits:
                     bullet.kill()
                     pygame.mixer.Sound.play(Hit_sound)
@@ -629,7 +634,6 @@ while running:
                         pygame.mixer.Sound.play(death_sound)
                         game_state = STATE_MENU
                         music_change('../Music/menu_music.wav')
-
 
         # Gameover
         # For player and enemies

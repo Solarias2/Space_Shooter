@@ -1,6 +1,6 @@
 import pygame
 import random
-from variable import SCREEN_WIDTH, SCREEN_HEIGHT, active_Frame, enemy1_frame, ENEMY_1, enemy1_bullets, enemy2_frame, ENEMY_2, enemy2_bullets
+from variable import SCREEN_WIDTH, SCREEN_HEIGHT, active_Frame, enemy1_frame, ENEMY_1, enemy2_frame, ENEMY_2,enemies, enemy_bullets
 from bullet import Enemy_Bullet
 
 class Enemy1(pygame.sprite.Sprite):
@@ -42,17 +42,24 @@ class Enemy1(pygame.sprite.Sprite):
         # Shoot bullets
         self.shoot(15)
 
+    # Shoot bullets
     def shoot(self, speed):
         if self.rect.bottom > 300 and self.shoot_flag == False:
             bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery, speed)
-            enemy1_bullets.add(bullet)
+            enemy_bullets.add(bullet)
             self.shoot_flag = True
 
+    # Decrease HP
     def damage(self):
         self.hp -= 1
         if self.hp == 0:
             self.kill()
             return True
+        
+    # Add a new Enemy1
+    def new_add(self):
+        new_enemy1 = Enemy1()
+        enemies.add(new_enemy1)
         
 
 class Enemy2(pygame.sprite.Sprite):
@@ -96,10 +103,11 @@ class Enemy2(pygame.sprite.Sprite):
         # Shoot bullets
         self.shoot(14)
 
+    # Shoot bullets
     def shoot(self, speed):
         if self.rect.bottom > 100 and self.shoot_flag == False:
             bullet = Enemy_Bullet(self.rect.centerx, self.rect.centery, speed)
-            enemy2_bullets.add(bullet)
+            enemy_bullets.add(bullet)
             self.shoot_flag = True
 
         # if self.rect.bottom > 300 and self.second_shoot_flag == 0:
@@ -107,8 +115,14 @@ class Enemy2(pygame.sprite.Sprite):
         #     enemy2_bullets.add(bullet)
         #     self.second_shoot_flag = 1
 
+    # Decrease HP
     def damage(self):
         self.hp -= 1
         if self.hp == 0:
             self.kill()
             return True
+        
+    # Add a new Enemy2
+    def new_add(self):
+        new_enemy2 = Enemy2()
+        enemies.add(new_enemy2)
