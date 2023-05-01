@@ -19,14 +19,20 @@ class Player(pygame.sprite.Sprite):
         self.bullet_delay = 150
         self.last_shot = pygame.time.get_ticks()
 
-        # Player"s HP
-        self.hp = 10
+        # Player's HP
+        self.hp = 5
 
         # Setting speed
         self.speed = 15
 
         # Shoot_flag
         self.shoot_flag = False
+
+        # Damage_flag
+        self.damage_flag = False
+
+        # Invincible time
+        self.invincible = 50
 
     # Moveing the player according to the key input
     def update(self):
@@ -69,5 +75,6 @@ class Player(pygame.sprite.Sprite):
 
     def damage(self):
         self.hp -= 1
+        self.damage_flag = True
         if self.hp == 0:
             return True
