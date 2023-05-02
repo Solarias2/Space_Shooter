@@ -25,7 +25,7 @@ active_Frame = 0
 
 # Create a font of menu option
 pygame.init()
-menu_font = pygame.font.Font(None, 36)
+menu_font = pygame.font.Font('../Fonts/ipam.ttf', 44)
 
 # Game States
 STATE_MENU = 4
@@ -39,12 +39,12 @@ STATE_DEAD = 6
 # Current state
 game_state = STATE_MENU
 
-# Define munu options
+# Define menu options
 menu_options = [
-    "Start Game",
-    "Settings",
-    "Help",
-    "Quit"
+    "ゲームスタート",
+    "設定",
+    "遊び方",
+    "終了"
 ]
 
 # Loop through the menu options and create a menu item for each one
@@ -53,7 +53,7 @@ for index, option in enumerate(menu_options):
     text = menu_font.render(option, True, (255, 255, 255))
     rect = text.get_rect()
     rect.centerx = screen.get_rect().centerx
-    rect.centery = screen.get_rect().centery + index * 50
+    rect.centery = screen.get_rect().centery + index * 60
     menu_items.append((option, text, rect))
 
 # Set the default menu option to the first one
@@ -63,6 +63,70 @@ menu_index = 0
 MED_DIFF = 0
 EASY_DIFF = 1
 HARD_DIFF = 2
+
+# Define setting options
+setting_options = [
+    "易しい",
+    "普通",
+    "難しい",
+    "戻る"
+]
+
+# Loop through the menu options and create a menu item for each one
+setting_items = []
+for index, option in enumerate(setting_options):
+    if index != 3:
+        text = menu_font.render(option, True, (255, 255, 255))
+        rect = text.get_rect()
+        rect.centerx = screen.get_rect().centerx
+        rect.centery = screen.get_rect().centery + index * 50
+        setting_items.append((option, text, rect))
+    else:
+        text = menu_font.render(option, True, (255, 255, 255))
+        rect = text.get_rect()
+        rect.centerx = screen.get_rect().centerx
+        rect.centery = screen.get_rect().centery + index * 100
+        setting_items.append((option, text, rect))
+
+# Set the default menu option to the first one
+setting_index = 0
+
+
+# Define help options
+help_options = [
+    "戻る"
+]
+
+# Loop through the menu options and create a menu item for each one
+help_items = []
+for index, option in enumerate(help_options):
+    text = menu_font.render(option, True, (255, 255, 255))
+    rect = text.get_rect()
+    rect.centerx = screen.get_rect().centerx
+    rect.centery = screen.get_rect().centery + index * 50 + 200
+    help_items.append((option, text, rect))
+
+# Set the default menu option to the first one
+help_index = 0
+
+
+# Define retry options
+retry_options = [
+    "もう一度",
+    "終わる"
+]
+
+# Loop through the retry options and create a retry item for each one
+retry_items = []
+for index, option in enumerate(retry_options):
+    text = menu_font.render(option, True, (255, 255, 255))
+    rect = text.get_rect()
+    rect.centerx = screen.get_rect().centerx
+    rect.centery = screen.get_rect().centery + index * 50
+    retry_items.append((option, text, rect))
+
+# Set the default retry option to the first one
+retry_index = 0
 
 # Create a font of score and game clear
 score_font = pygame.font.Font(None, 36)
@@ -96,6 +160,7 @@ Hit_sound = pygame.mixer.Sound('../SFX/enemy_hit.wav')
 death_sound = pygame.mixer.Sound('../SFX/player_death.wav')
 bullet_sound = pygame.mixer.Sound('../SFX/bullet_fire.wav')
 Boss_Incoming = pygame.mixer.Sound('../SFX/Boss_incoming.wav')
+Menu_Select = pygame.mixer.Sound('../SFX/Menu_Select.wav')
 
 
 # Player_bullet group
@@ -114,6 +179,7 @@ hit_enemies = []
 boss_bullets = pygame.sprite.Group()
 
 #Text being used in the Game
+SETTING_MENU_TEXT = 'DIFFICULTY'
 HELP_MENU_TEXT = '遊び方\n1. 矢印キーでプレイヤーを移動，スペースキーで弾を発射\n2. スコアが50を超えたら，ボスが出現\n3. 5回攻撃を受けると，ゲームオーバー\n4. 難易度は，イージー，ミディアム，ハードの3つ\n\nエネミーは3種類\nエネミー1を倒すと10点，エネミー2を倒すと50点'
 GAME_OVER_TEXT = 'ゲームオーバー!!\nもう一度遊びますか？'
 GAME_CLEAR_TEXT = 'クリアおめでとう!!!!!'

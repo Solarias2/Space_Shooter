@@ -1,20 +1,22 @@
 import pygame
 import random
+import variable
 from variable import SCREEN_WIDTH, SCREEN_HEIGHT, boss_frame, active_Frame, BOSS, BOSS_MOVE_INTERVAL, boss_bullets
 from bullet import Boss_bullet, Enemy_Bullet
 
 class Boss(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, diff):
         super().__init__()
-
+        delay = [1200, 1500, 800]
         # Load image of boss
         original_image = pygame.image.load(boss_frame[active_Frame])
         self.image = pygame.transform.scale(
             original_image, (original_image.get_width() * 1.5, original_image.get_height() * 1.5))
         self.type = BOSS
+        self.diff = diff
 
         self.last_move_time = pygame.time.get_ticks()
-        self.bullet_delay = 1500
+        self.bullet_delay = delay[self.diff]
         self.last_shot = pygame.time.get_ticks()
 
         # Setting the position of boss
@@ -23,7 +25,8 @@ class Boss(pygame.sprite.Sprite):
         self.rect.bottom = 250
 
         # Boss's HP
-        self.hp = 50
+        hp = [50, 25, 100]
+        self.hp = hp[self.diff]
 
     def update(self):
         # Check if it's time to move the boss
@@ -32,8 +35,16 @@ class Boss(pygame.sprite.Sprite):
             self.last_move_time = now
 
             # Move the boss in a random direction
-            self.speedx = random.randint(-18, 18)
-            self.speedy = random.randint(-10, 10)
+            if self.diff == variable.EASY_DIFF:
+                self.speedx = random.randint(-10, 10)
+                self.speedy = random.randint(-5, 5)
+            if self.diff == variable.MED_DIFF:
+                self.speedx = random.randint(-16, 16)
+                self.speedy = random.randint(-10, 10)
+            if self.diff == variable.HARD_DIFF:
+                self.speedx = random.randint(-20, 20)
+                self.speedy = random.randint(-15, 15)
+
 
         self.rect.move_ip(self.speedx, self.speedy)
 
@@ -48,17 +59,18 @@ class Boss(pygame.sprite.Sprite):
             self.rect.bottom = SCREEN_HEIGHT / 2 + 100
 
         # Shoot bullets
-        self.shoot(15)
+        self.shoot()
 
-    def shoot(self, speed):
+    def shoot(self):
         now = pygame.time.get_ticks()
+        speed = [15, 12, 18]
         if now - self.last_shot >= self.bullet_delay:
             self.last_shot = now
-            Main_bullet = Boss_bullet(self.rect.centerx, self.rect.centery, speed)
+            Main_bullet = Boss_bullet(self.rect.centerx, self.rect.centery, speed[self.diff])
             boss_bullets.add(Main_bullet)
-            Right_bullet = Enemy_Bullet(self.rect.centerx + 70, self.rect.centery, speed)
+            Right_bullet = Enemy_Bullet(self.rect.centerx + 70, self.rect.centery, speed[self.diff])
             boss_bullets.add(Right_bullet)
-            Left_bullet = Enemy_Bullet(self.rect.centerx - 50, self.rect.centery, speed)
+            Left_bullet = Enemy_Bullet(self.rect.centerx - 50, self.rect.centery, speed[self.diff])
             boss_bullets.add(Left_bullet)
 
     def damage(self):

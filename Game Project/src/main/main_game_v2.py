@@ -32,20 +32,19 @@ player = Player()
 
 # Boss
 bosses = pygame.sprite.Group()
-boss = Boss()
 
 # Time setting of boss
 
 game_state = variable.game_state
 menu_index = variable.menu_index
+DIFF = variable.EASY_DIFF
+setting_index = variable.setting_index
+retry_index = variable.retry_index
 bg_y = variable.bg_y
 
 # Set the max FPS
 clock = pygame.time.Clock()
 FPS = 40
-
-# Key
-# key = pygame.key.get_pressed()
 
 # Game_loop
 running = True
@@ -58,8 +57,8 @@ while running:
             running = False
 
         elif event.type == pygame.KEYDOWN:
+            # For Game menu
             if game_state == variable.STATE_MENU:
-
                 if event.key == pygame.K_UP:
                     # Move the menu index up
                     menu_index = (menu_index - 1) % len(variable.menu_items)
@@ -82,31 +81,90 @@ while running:
                         player.hp = 5
                         player.damage_flag = False
                         player.invincible = 50
-                        boss.hp = 10
                         for i in range(6):
-                            enemy1 = Enemy1()
+                            enemy1 = Enemy1(DIFF)
                             variable.enemies.add(enemy1)
 
                         for i in range(3):
-                            enemy2 = Enemy2()
+                            enemy2 = Enemy2(DIFF)
                             variable.enemies.add(enemy2)
 
+                        boss = Boss(DIFF)
                         bosses.add(boss)
 
                         pygame.mixer.Sound.play(variable.start_sound)
                         functions.music_change('../Music/stage_music.wav')
 
                     elif menu_index == 1:
-                        pass
+                        game_state = variable.STATE_SETTING
+                        pygame.mixer.Sound.play(variable.Menu_Select)
 
                     elif menu_index == 2:
                         game_state = variable.STATE_HELP
+                        pygame.mixer.Sound.play(variable.Menu_Select)
 
                     elif menu_index == 3:
+                        pygame.mixer.Sound.play(variable.Menu_Select)
                         pygame.quit()
                         sys.exit()
 
-            if game_state == variable.STATE_GAMEPLAY:
+            # For Setting
+            elif game_state == variable.STATE_SETTING:
+                if event.key == pygame.K_UP:
+                    # Move the setting index up
+                    setting_index = (setting_index - 1) % len(variable.setting_items)
+
+                elif event.key == pygame.K_DOWN:
+                    # Move the setting index down
+                   setting_index = (setting_index + 1) % len(variable.setting_items)
+
+                elif event.key == pygame.K_RETURN:
+                    # Check which menu option was selected
+                    if setting_index == 0:
+                        DIFF = variable.EASY_DIFF
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+                    elif setting_index == 1:
+                        DIFF = variable.MED_DIFF
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+                    elif setting_index == 2:
+                        DIFF = variable.HARD_DIFF
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+                    elif setting_index == 3:
+                        game_state = variable.STATE_MENU
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+            # For Help
+            elif game_state == variable.STATE_HELP:
+                if event.key == pygame.K_RETURN:
+                    game_state = variable.STATE_MENU
+                    pygame.mixer.Sound.play(variable.Menu_Select)
+
+             # For Game Clear and Game Over
+            elif game_state == variable.STATE_CLEAR or game_state == variable.STATE_DEAD:
+                if event.key == pygame.K_UP:
+                    # Move the setting index up
+                    retry_index = (retry_index - 1) % len(variable.retry_items)
+
+                elif event.key == pygame.K_DOWN:
+                    # Move the setting index down
+                    retry_index = (retry_index + 1) % len(variable.retry_items)
+
+                elif event.key == pygame.K_RETURN:
+                    # Check which menu option was selected
+                    if retry_index == 0:
+                        game_state = variable.STATE_MENU
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+                    elif retry_index == 1:
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+                        pygame.quit()
+                        sys.exit()
+
+            # For Player bullet
+            elif game_state == variable.STATE_GAMEPLAY:
                 # Shoot bullets
                 if event.key == pygame.K_SPACE:
                     player.shoot_flag = True
@@ -116,6 +174,7 @@ while running:
                 player.shoot_flag = False
 
     # Process according to the game state
+    # For Game menu
     if game_state == variable.STATE_MENU:
         # Draw menu screen
         for index, item in enumerate(variable.menu_items):
@@ -127,6 +186,7 @@ while running:
                 variable.screen.blit(variable.menu_font.render(
                     item[0], True, (128, 128, 128)), item[2])
 
+    # For Game
     if game_state == variable.STATE_GAMEPLAY:
         # Draw score on surface object
         score_surface = variable.score_font.render(
@@ -151,13 +211,13 @@ while running:
                 if isinstance(enemy, Enemy1):
                     if enemy.damage():
                         score += 10
-                        new_enemy1 = Enemy1()
+                        new_enemy1 = Enemy1(DIFF)
                         variable.enemies.add(new_enemy1)
 
                 elif isinstance(enemy, Enemy2):
                     if enemy.damage():
                         score += 50
-                        new_enemy2 = Enemy2()
+                        new_enemy2 = Enemy2(DIFF)
                         variable.enemies.add(new_enemy2)
 
         # Draw background and scroll
@@ -245,12 +305,12 @@ while running:
                         pygame.mixer.Sound.play(variable.death_sound)
                         if isinstance(enemy, Enemy1):
                             enemy.kill()
-                            new_enemy1 = Enemy1()
+                            new_enemy1 = Enemy1(DIFF)
                             variable.enemies.add(new_enemy1)
 
                         elif isinstance(enemy, Enemy2):
                             enemy.kill()
-                            new_enemy2 = Enemy2()
+                            new_enemy2 = Enemy2(DIFF)
                             variable.enemies.add(new_enemy2)
 
                         if player.damage():
@@ -267,17 +327,49 @@ while running:
                         if player.damage():
                             game_state = variable.STATE_DEAD
                             functions.music_change('../Music/menu_music.wav')
-    
+
+    # For Setting
+    if game_state == variable.STATE_SETTING:
+        # Draw setting screen
+        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font(None, 50))
+        for index, item in enumerate(variable.setting_items):
+            if index == setting_index:
+                # Selected items are drawn in white
+                variable.screen.blit(item[1], item[2])
+            else:
+                # Unselected items are drawn in gray
+                variable.screen.blit(variable.menu_font.render(
+                    item[0], True, (128, 128, 128)), item[2])
+
+    # For Help
+    if game_state == variable.STATE_HELP:
+        # Draw help screen
+        functions.blit_text(variable.screen, variable.HELP_MENU_TEXT, (variable.SCREEN_WIDTH / 3 - 200, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        for index, item in enumerate(variable.help_items):
+            variable.screen.blit(item[1], item[2])
+
     if game_state == variable.STATE_CLEAR:
         functions.blit_text(variable.screen, variable.GAME_CLEAR_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        for index, item in enumerate(variable.retry_items):
+            if index == retry_index:
+                # Selected items are drawn in white
+                variable.screen.blit(item[1], item[2])
+            else:
+                # Unselected items are drawn in gray
+                variable.screen.blit(variable.menu_font.render(
+                    item[0], True, (128, 128, 128)), item[2])
 
+    # For Game Over
     if game_state == variable.STATE_DEAD:
-        # clear_surface = variable.clear_font.render("Game Over "+ '\n' + " Try Again?", True, (255, 255, 255))
-        # variable.screen.blit(clear_surface, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 2))
         functions.blit_text(variable.screen, variable.GAME_OVER_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
-
-    if game_state == variable.STATE_HELP:
-        functions.blit_text(variable.screen, variable.HELP_MENU_TEXT, (variable.SCREEN_WIDTH / 3 - 200, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        for index, item in enumerate(variable.retry_items):
+            if index == retry_index:
+                # Selected items are drawn in white
+                variable.screen.blit(item[1], item[2])
+            else:
+                # Unselected items are drawn in gray
+                variable.screen.blit(variable.menu_font.render(
+                    item[0], True, (128, 128, 128)), item[2])
 
     # Update screen
     pygame.display.flip()
