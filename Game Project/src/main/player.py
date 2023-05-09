@@ -84,7 +84,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.fast == True or self.berserk == True:
             self.bullet_delay = bullet_delay[1]
-        else:
+        elif not self.fast and not self.berserk:
             self.bullet_delay = bullet_delay[0]
 
         if self.shoot_flag and now - self.last_shot >= self.bullet_delay:
