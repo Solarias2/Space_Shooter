@@ -23,6 +23,8 @@ boss_frame = ['../Assets/Boss.png']
 
 active_Frame = 0
 
+player_hp = pygame.image.load("../Assets/Heart.png").convert_alpha()
+
 # Create a font of menu option
 pygame.init()
 menu_font = pygame.font.Font('../Fonts/ipam.ttf', 44)
@@ -103,7 +105,7 @@ for index, option in enumerate(help_options):
     text = menu_font.render(option, True, (255, 255, 255))
     rect = text.get_rect()
     rect.centerx = screen.get_rect().centerx
-    rect.centery = screen.get_rect().centery + index * 50 + 200
+    rect.centery = screen.get_rect().centery + index * 50 + 400
     help_items.append((option, text, rect))
 
 # Set the default menu option to the first one
@@ -152,6 +154,18 @@ death_conditions = {
     "Colliding with an enemy bullet": (ENEMY_BULLET, BOSS_BULLET)
 }
 
+# ID for item types. Meant to check getting items Conditions
+multi = 1
+wide = 2
+fast = 3
+berserk = 4
+heart = 5
+
+# Define the getting items conditions
+item_types = {
+    "get an item type": (multi, wide, fast, berserk, heart)
+}
+
 # Starts up menu music
 mixer.music.load('../Music/menu_music.wav')
 mixer.music.play(-1)
@@ -176,7 +190,7 @@ enemy_bullets = pygame.sprite.Group()
 hit_enemies = []
 
 # Boss_bullets
-boss_bullets = pygame.sprite.Group()
+boss_bullets = pygame.sprite.Group() 
 
 #Text being used in the Game
 SETTING_MENU_TEXT = 'DIFFICULTY'

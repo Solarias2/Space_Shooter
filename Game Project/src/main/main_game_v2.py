@@ -1,10 +1,12 @@
 import pygame
+import random
 import sys
 import variable
 import functions
 from player import Player
 from enemy import Enemy1, Enemy2
 from boss import Boss
+from item import Item1, Item2, Item3, Item4, heart
 
 
 ################################## Functions ##################################
@@ -15,7 +17,7 @@ def reset_game():
     variable.enemy_bullets.empty()
     variable.boss_bullets.empty()
     player.rect.centerx = variable.SCREEN_WIDTH / 2
-    player.rect.bottom = variable.SCREEN_HEIGHT - 10
+    player.rect.bottom = variable.SCREEN_HEIGHT - 60
 
 
 ################################## Basic parts of the game ##################################
@@ -33,8 +35,20 @@ player = Player()
 # Boss
 bosses = pygame.sprite.Group()
 
-# Time setting of boss
+# Items
+items = pygame.sprite.Group()
 
+# Items getting delay
+
+previous_drop_time = pygame.time.get_ticks() + 5 * 1000
+
+# Powerup time limit
+item1_timelimit = 15 * 1000
+item2_timelimit = 15 * 1000
+item3_timelimit = 15 * 1000
+item4_timelimit = 10 * 1000
+
+# Variable
 game_state = variable.game_state
 menu_index = variable.menu_index
 DIFF = variable.EASY_DIFF
@@ -72,7 +86,7 @@ while running:
                     if menu_index == 0:
                         game_state = variable.STATE_GAMEPLAY
                         reset_game()
-                        Start_Score = 50
+                        Start_Score = 100
                         multiplier = 2
                         score = 0
                         waiting_time = 0
@@ -81,6 +95,7 @@ while running:
                         player.hp = 5
                         player.damage_flag = False
                         player.invincible = 50
+                        item_last_time = pygame.time.get_ticks() + 8000
                         for i in range(6):
                             enemy1 = Enemy1(DIFF)
                             variable.enemies.add(enemy1)
@@ -174,7 +189,7 @@ while running:
                 player.shoot_flag = False
 
     # Process according to the game state
-    # For Game menu
+     # For Game menu
     if game_state == variable.STATE_MENU:
         # Draw menu screen
         for index, item in enumerate(variable.menu_items):
@@ -202,7 +217,7 @@ while running:
         variable.player_bullets.update()
         variable.enemy_bullets.update()
 
-        # Collision judgement for Player
+        # Collision judgement for Player_bullet
         for bullet in variable.player_bullets:
             bullet_hits = pygame.sprite.spritecollide(bullet, variable.enemies, False)
             for enemy in bullet_hits:
@@ -246,6 +261,37 @@ while running:
         variable.player_bullets.draw(variable.screen)
         variable.enemy_bullets.draw(variable.screen)
 
+        items.draw(variable.screen)
+
+        # Display item
+        check_time = pygame.time.get_ticks()
+        if check_time >= previous_drop_time:
+            check_prob = random.randint(0,100)
+            if check_prob <= 20:
+                item1 = Item1()
+                items.add(item1)
+
+            if check_prob > 20 and check_prob <= 40:
+                item2 = Item2()
+                items.add(item2)
+
+            if check_prob > 40 and check_prob <= 60:
+                item3 = Item3()
+                items.add(item3)
+
+            if check_prob > 60 and check_prob <= 100:
+                item4 = Item4()
+                items.add(item4)
+
+            previous_drop_time = check_time + 5 * 1000
+        items.update()
+            
+
+
+        # Display player hp
+        for i in range(player.hp):
+            variable.screen.blit(variable.player_hp, (10 + i * 50, variable.SCREEN_HEIGHT - 50))
+
         # Draw boss
         if score >= Start_Score:
             boss_music = pygame.mixer.Sound(variable.Boss_Incoming)
@@ -265,7 +311,7 @@ while running:
                 variable.boss_bullets.update()
 
             # Collision judgement for Boss
-            # For player bullets and boss
+             # For player bullets and boss
             for bullet in variable.player_bullets:
                 bullet_hits = pygame.sprite.spritecollide(bullet, bosses, False)
                 for boss in bullet_hits:
@@ -276,7 +322,7 @@ while running:
                         game_state = variable.STATE_CLEAR
 
 
-            # For player and boss
+             # For player and boss
             for boss in bosses:
                 if player.rect.colliderect(boss.rect):
                     if boss.type in variable.death_conditions["Colliding with an enemy ship"]:
@@ -286,7 +332,7 @@ while running:
                                 game_state = variable.STATE_DEAD
                                 functions.music_change('../Music/menu_music.wav')
 
-            # For player and boss bullets
+             # For player and boss bullets
             for bullet in variable.boss_bullets:
                 if player.rect.colliderect(bullet.rect):
                     if bullet.type in variable.death_conditions["Colliding with an enemy bullet"]:
@@ -297,7 +343,7 @@ while running:
                                 functions.music_change('../Music/menu_music.wav')
 
         # Gameover
-        # For player and enemies
+         # For player and enemies
         for enemy in variable.enemies:
             if player.rect.colliderect(enemy.rect):
                 if enemy.type in variable.death_conditions["Colliding with an enemy ship"]:
@@ -317,7 +363,7 @@ while running:
                             game_state = variable.STATE_DEAD
                             functions.music_change('../Music/menu_music.wav')
 
-        # For player and enemies bullets
+         # For player and enemies bullets
         for bullet in variable.enemy_bullets:
             if player.rect.colliderect(bullet.rect):
                 if bullet.type in variable.death_conditions["Colliding with an enemy bullet"]:
@@ -327,6 +373,81 @@ while running:
                         if player.damage():
                             game_state = variable.STATE_DEAD
                             functions.music_change('../Music/menu_music.wav')
+
+        # Collision judgement for Item
+         # For player and items
+        for item in items:
+            if player.rect.colliderect(item.rect):
+                if item.type in variable.item_types["get an item type"]:
+                    item_get_time = pygame.time.get_ticks()
+                    # Item1
+                    if item.type == variable.multi:
+                        if not player.multi:
+                            player.multi = True
+                            item.kill()
+                        # When player get item1 while being powered up, add addtional power up time.
+                        elif player.multi:
+                            item1_timelimit = pygame.time.get_ticks() + 15 * 1000
+                            item.kill()
+
+                    # Item2
+                    if item.type == variable.wide:
+                        if not player.wide:
+                            player.wide = True
+                            item.kill()
+                        # When player get item2 while being powered up, add addtional power up time.
+                        elif player.wide:
+                            item2_timelimit = pygame.time.get_ticks() + 15 * 1000
+                            item.kill()
+
+                    # Item3
+                    if item.type == variable.fast:
+                        if not player.fast:
+                            player.fast = True
+                            item.kill()
+                        # When player get item3 while being powered up, add addtional power up time.
+                        elif player.fast:
+                            item3_timelimit = pygame.time.get_ticks() + 15 * 1000
+                            item.kill()
+
+                    # Item4
+                    if item.type == variable.berserk:
+                        if not player.berserk:
+                            player.berserk = True
+                            item.kill()
+                        # When player get item4 while being powered up, add addtional power up time.
+                        elif player.berserk:
+                            item4_timelimit = pygame.time.get_ticks() + 10 * 1000
+                            item.kill()
+
+
+        # Item1's time limit
+        if player.multi:
+            powerup1_now = pygame.time.get_ticks()
+            if powerup1_now - item_get_time >= item1_timelimit:
+                player.multi = False
+                item_get_time = powerup1_now
+
+        # Item2's time limit
+        if player.wide:
+            powerup2_now = pygame.time.get_ticks()
+            if powerup2_now - item_get_time >= item2_timelimit:
+                player.wide = False
+                item_get_time = powerup2_now
+
+        # Item3's time limit
+        if player.fast:
+            powerup3_now = pygame.time.get_ticks()
+            if powerup3_now - item_get_time >= item3_timelimit:
+                player.fast = False
+                item_get_time = powerup3_now
+
+        # Item4's time limit
+        if player.berserk:
+            powerup4_now = pygame.time.get_ticks()
+            if powerup4_now - item_get_time >= item4_timelimit:
+                player.berserk = False
+                item_get_time = powerup4_now
 
     # For Setting
     if game_state == variable.STATE_SETTING:
@@ -344,7 +465,7 @@ while running:
     # For Help
     if game_state == variable.STATE_HELP:
         # Draw help screen
-        functions.blit_text(variable.screen, variable.HELP_MENU_TEXT, (variable.SCREEN_WIDTH / 3 - 200, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        functions.blit_text(variable.screen, variable.HELP_MENU_TEXT, (variable.SCREEN_WIDTH / 3 - 200, variable.SCREEN_HEIGHT / 10), pygame.font.Font('../Fonts/ipam.ttf', 36))
         for index, item in enumerate(variable.help_items):
             variable.screen.blit(item[1], item[2])
 

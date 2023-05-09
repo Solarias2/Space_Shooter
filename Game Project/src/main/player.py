@@ -1,6 +1,6 @@
 import pygame
 from variable import SCREEN_WIDTH, SCREEN_HEIGHT, active_Frame, player_frame, bullet_sound, player_bullets
-from bullet import Player_Bullet
+from bullet import Player_Bullet, Player_Wide_Bullet
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -14,9 +14,8 @@ class Player(pygame.sprite.Sprite):
         # Setting the position of player
         self.rect = self.image.get_rect()
         self.rect.centerx = SCREEN_WIDTH / 2
-        self.rect.bottom = SCREEN_HEIGHT - 10
+        self.rect.bottom = SCREEN_HEIGHT
 
-        self.bullet_delay = 150
         self.last_shot = pygame.time.get_ticks()
 
         # Player's HP
@@ -33,6 +32,19 @@ class Player(pygame.sprite.Sprite):
 
         # Invincible time
         self.invincible = 50
+
+        # Powerup flag
+         # For item1
+        self.multi = False
+
+         # For item2
+        self.wide = False
+
+         # For item3
+        self.fast = False
+
+         # For item4
+        self.berserk = False
 
     # Moveing the player according to the key input
     def update(self):
@@ -60,19 +72,43 @@ class Player(pygame.sprite.Sprite):
         if self.rect.top < 0:
             self.rect.top = 0
 
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
+        if self.rect.bottom > SCREEN_HEIGHT - 60:
+            self.rect.bottom = SCREEN_HEIGHT - 60
 
         self.shoot()
 
     def shoot(self):
+        # Continue to shoot bullets while holding space bar.
         now = pygame.time.get_ticks()
+        bullet_delay = [150, 100]
+
+        if self.fast == True or self.berserk == True:
+            self.bullet_delay = bullet_delay[1]
+        else:
+            self.bullet_delay = bullet_delay[0]
+
         if self.shoot_flag and now - self.last_shot >= self.bullet_delay:
             self.last_shot = now
             bullet = Player_Bullet(self.rect.centerx - 15, self.rect.top)
             player_bullets.add(bullet)
             pygame.mixer.Sound.play(bullet_sound)
 
+            # While being powered up woth item1, player can shoot 3 bullet3.
+            if self.multi or self.berserk:
+                right_bullet = Player_Bullet(self.rect.centerx + 5, self.rect.top)
+                left_bullet = Player_Bullet(self.rect.centerx - 35, self.rect.top)
+                player_bullets.add(right_bullet)
+                player_bullets.add(left_bullet)
+
+            if self.wide or self.berserk:
+                right_bullet = Player_Wide_Bullet(self.rect.right-50, self.rect.centery-15, 30)
+                left_bullet = Player_Wide_Bullet(self.rect.left+40, self.rect.centery-15, 150)
+                player_bullets.add(right_bullet)
+                player_bullets.add(left_bullet)
+
+            
+
+    # 
     def damage(self):
         self.hp -= 1
         self.damage_flag = True

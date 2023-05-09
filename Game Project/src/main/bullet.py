@@ -1,4 +1,6 @@
 import pygame
+import math
+from pygame.sprite import Group
 from variable import SCREEN_HEIGHT, ENEMY_BULLET, BOSS_BULLET
 
 class Player_Bullet(pygame.sprite.Sprite):
@@ -21,6 +23,35 @@ class Player_Bullet(pygame.sprite.Sprite):
 
         if self.rect.bottom < 0:
             self.kill()
+
+
+class Player_Wide_Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle):
+        super().__init__()
+        # Load image of bullet
+        original_img = pygame.image.load("../Assets/Bullet_Player.png")
+        self.image = pygame.transform.rotate(original_img, angle)
+
+        # Setting the position of bullet
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+        self.speed = -14
+
+        # Calculate the velocity components for the bullet
+        self.velocity_x = math.cos(math.radians(angle)) * self.speed
+        self.velocity_y = math.sin(math.radians(angle)) * self.speed
+
+    def update(self):
+        self.rect.x += self.velocity_x
+        self.rect.y += self.velocity_y
+
+        if self.rect.bottom < 0:
+            self.kill()
+
+
+
 
 class Enemy_Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, speed):

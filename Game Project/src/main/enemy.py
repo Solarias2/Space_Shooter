@@ -19,7 +19,7 @@ class Enemy1(pygame.sprite.Sprite):
         self.rect.y = random.randrange(-100, -50)
 
         # Setting speed and HP
-        hp = [3, 1, 5]
+        hp = [2, 1, 5]
         if diff == variable.EASY_DIFF:
             self.speed = random.randrange(5, 9)
         if diff == variable.MED_DIFF:
