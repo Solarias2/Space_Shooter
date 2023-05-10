@@ -1,3 +1,4 @@
+from typing import Any
 import pygame
 import random
 import variable
@@ -114,13 +115,20 @@ class Item4(pygame.sprite.Sprite):
 
 
 # Item for cure
-class heart(pygame.sprite.Sprite):
+class Heart(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.image = pygame.image.load("../Assets/Heart.png")
-        self.rect.x = random.randrange(variable.SCREEN_WIDTH - self.rect.width)
-        self.rect.y = random.randrange(variable.SCREEN_HEIGHT - self.rect.height)
+        self.image = pygame.image.load("../Assets/Life_Up.png")
+        self.rect = self.image.get_rect()
+        self.rect.x = random.choice([0, variable.SCREEN_WIDTH])
+        self.rect.y = random.randrange(variable.SCREEN_HEIGHT / 2, variable.SCREEN_HEIGHT - self.rect.height)
+
+        # Setting speed
+        self.speed = 9
 
         # Type
         self.type = variable.heart
+
+    def update(self):
+        self.rect.x += self.speed

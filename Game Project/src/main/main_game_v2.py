@@ -6,7 +6,7 @@ import functions
 from player import Player
 from enemy import Enemy1, Enemy2
 from boss import Boss
-from item import Item1, Item2, Item3, Item4, heart
+from item import Item1, Item2, Item3, Item4, Heart
 
 
 ################################## Functions ##################################
@@ -18,6 +18,40 @@ def reset_game():
     variable.boss_bullets.empty()
     player.rect.centerx = variable.SCREEN_WIDTH / 2
     player.rect.bottom = variable.SCREEN_HEIGHT - 60
+
+def Enemy_Drop(Difficulty_flag):
+        items.draw(variable.screen)
+
+        if Difficulty_flag == 2:
+            check_prob = random.randint(0,7000)
+        else:
+            check_prob = random.randint(0, 10000)
+        
+        #Multi Drop
+        if check_prob <= 200:
+            item1 = Item1()
+            items.add(item1)
+
+        # Wide Drop
+        if check_prob > 200 and check_prob <= 400:
+            item2 = Item2()
+            items.add(item2)
+
+        #Fast Drop
+        if check_prob > 400 and check_prob <= 600:
+            item3 = Item3()
+            items.add(item3)
+
+        # Berserk Drop
+        if check_prob > 600 and check_prob <= 650:
+            item4 = Item4()
+            items.add(item4)
+
+        #Heart Drop
+        if check_prob > 650 and check_prob <= 700:
+            heart = Heart()
+            items.add(heart)
+
 
 
 ################################## Basic parts of the game ##################################
@@ -38,20 +72,17 @@ bosses = pygame.sprite.Group()
 # Items
 items = pygame.sprite.Group()
 
-# Items getting delay
-
-previous_drop_time = pygame.time.get_ticks() + 5 * 1000
-
 # Powerup time limit
-item1_timelimit = 15 * 1000
-item2_timelimit = 15 * 1000
-item3_timelimit = 15 * 1000
-item4_timelimit = 10 * 1000
+item1_timelimit = 7 * 1000
+item2_timelimit = 7 * 1000
+item3_timelimit = 7 * 1000
+item4_timelimit = 4 * 1000
 
 # Variable
 game_state = variable.game_state
 menu_index = variable.menu_index
 DIFF = variable.EASY_DIFF
+GAME_MODE = variable.STANDARD_MODE
 setting_index = variable.setting_index
 retry_index = variable.retry_index
 bg_y = variable.bg_y
@@ -86,7 +117,7 @@ while running:
                     if menu_index == 0:
                         game_state = variable.STATE_GAMEPLAY
                         reset_game()
-                        Start_Score = 100
+                        Start_Score = 5000
                         multiplier = 2
                         score = 0
                         waiting_time = 0
@@ -95,7 +126,6 @@ while running:
                         player.hp = 5
                         player.damage_flag = False
                         player.invincible = 50
-                        item_last_time = pygame.time.get_ticks() + 8000
                         for i in range(6):
                             enemy1 = Enemy1(DIFF)
                             variable.enemies.add(enemy1)
@@ -148,6 +178,14 @@ while running:
                         pygame.mixer.Sound.play(variable.Menu_Select)
 
                     elif setting_index == 3:
+                        GAME_MODE = variable.STANDARD_MODE
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+                    
+                    elif setting_index == 4:
+                        GAME_MODE = variable.FREEPLAY_MODE
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+                    elif setting_index == 5:
                         game_state = variable.STATE_MENU
                         pygame.mixer.Sound.play(variable.Menu_Select)
 
@@ -225,15 +263,19 @@ while running:
                 pygame.mixer.Sound.play(variable.Hit_sound)
                 if isinstance(enemy, Enemy1):
                     if enemy.damage():
+                        Enemy_Drop(DIFF)
                         score += 10
                         new_enemy1 = Enemy1(DIFF)
                         variable.enemies.add(new_enemy1)
 
                 elif isinstance(enemy, Enemy2):
                     if enemy.damage():
+                        Enemy_Drop(DIFF)
                         score += 50
                         new_enemy2 = Enemy2(DIFF)
                         variable.enemies.add(new_enemy2)
+
+        items.update()
 
         # Draw background and scroll
         bg_y = (bg_y + 8) % 900
@@ -263,28 +305,7 @@ while running:
 
         items.draw(variable.screen)
 
-        # Display item
-        check_time = pygame.time.get_ticks()
-        if check_time >= previous_drop_time:
-            check_prob = random.randint(0,100)
-            if check_prob <= 20:
-                item1 = Item1()
-                items.add(item1)
-
-            if check_prob > 20 and check_prob <= 40:
-                item2 = Item2()
-                items.add(item2)
-
-            if check_prob > 40 and check_prob <= 60:
-                item3 = Item3()
-                items.add(item3)
-
-            if check_prob > 60 and check_prob <= 100:
-                item4 = Item4()
-                items.add(item4)
-
-            previous_drop_time = check_time + 5 * 1000
-        items.update()
+        # Display item for whenever an enemy dies
             
 
 
@@ -293,7 +314,7 @@ while running:
             variable.screen.blit(variable.player_hp, (10 + i * 50, variable.SCREEN_HEIGHT - 50))
 
         # Draw boss
-        if score >= Start_Score:
+        if score >= Start_Score and GAME_MODE == variable.STANDARD_MODE:
             boss_music = pygame.mixer.Sound(variable.Boss_Incoming)
             boss_music.play()
             if start_time == None:
@@ -384,41 +405,39 @@ while running:
                     if item.type == variable.multi:
                         if not player.multi:
                             player.multi = True
-                            item.kill()
                         # When player get item1 while being powered up, add addtional power up time.
                         elif player.multi:
-                            item1_timelimit = pygame.time.get_ticks() + 15 * 1000
-                            item.kill()
+                            item1_timelimit = 7 * 1000
 
                     # Item2
                     if item.type == variable.wide:
                         if not player.wide:
                             player.wide = True
-                            item.kill()
                         # When player get item2 while being powered up, add addtional power up time.
                         elif player.wide:
-                            item2_timelimit = pygame.time.get_ticks() + 15 * 1000
-                            item.kill()
+                            item2_timelimit = 7 * 1000
 
                     # Item3
                     if item.type == variable.fast:
                         if not player.fast:
                             player.fast = True
-                            item.kill()
                         # When player get item3 while being powered up, add addtional power up time.
                         elif player.fast:
-                            item3_timelimit = pygame.time.get_ticks() + 15 * 1000
-                            item.kill()
+                            item3_timelimit = 7 * 1000
 
                     # Item4
                     if item.type == variable.berserk:
                         if not player.berserk:
                             player.berserk = True
-                            item.kill()
                         # When player get item4 while being powered up, add addtional power up time.
                         elif player.berserk:
-                            item4_timelimit = pygame.time.get_ticks() + 10 * 1000
-                            item.kill()
+                            item4_timelimit = 4 * 1000
+
+                    # Heart
+                    if item.type == variable.heart:
+                        player.hp += 1
+
+                    item.kill()
 
 
         # Item1's time limit

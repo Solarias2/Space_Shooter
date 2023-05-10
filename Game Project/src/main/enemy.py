@@ -19,7 +19,7 @@ class Enemy1(pygame.sprite.Sprite):
         self.rect.y = random.randrange(-100, -50)
 
         # Setting speed and HP
-        hp = [2, 1, 5]
+        hp = [2, 1, 4]
         if diff == variable.EASY_DIFF:
             self.speed = random.randrange(5, 9)
         if diff == variable.MED_DIFF:
@@ -90,7 +90,7 @@ class Enemy2(pygame.sprite.Sprite):
         self.rect.y = random.randrange(-100, -50)
 
         # Setting speed and HP
-        hp = [6, 3, 9]
+        hp = [5, 3, 7]
         if diff == variable.EASY_DIFF:
             self.speed = random.randrange(5, 9)
         if diff == variable.MED_DIFF:

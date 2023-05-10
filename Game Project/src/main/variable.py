@@ -66,18 +66,23 @@ MED_DIFF = 0
 EASY_DIFF = 1
 HARD_DIFF = 2
 
+STANDARD_MODE = 0
+FREEPLAY_MODE = 1
+
 # Define setting options
 setting_options = [
     "易しい",
     "普通",
     "難しい",
+    "スタンダード",
+    "フリープレイ",
     "戻る"
 ]
 
 # Loop through the menu options and create a menu item for each one
 setting_items = []
 for index, option in enumerate(setting_options):
-    if index != 3:
+    if index != 6:
         text = menu_font.render(option, True, (255, 255, 255))
         rect = text.get_rect()
         rect.centerx = screen.get_rect().centerx

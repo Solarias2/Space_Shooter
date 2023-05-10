@@ -26,11 +26,11 @@ class Player_Bullet(pygame.sprite.Sprite):
 
 
 class Player_Wide_Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle1, angle2):
         super().__init__()
         # Load image of bullet
         original_img = pygame.image.load("../Assets/Bullet_Player.png")
-        self.image = pygame.transform.rotate(original_img, angle)
+        self.image = pygame.transform.rotate(original_img, angle1)
 
         # Setting the position of bullet
         self.rect = self.image.get_rect()
@@ -40,8 +40,8 @@ class Player_Wide_Bullet(pygame.sprite.Sprite):
         self.speed = -14
 
         # Calculate the velocity components for the bullet
-        self.velocity_x = math.cos(math.radians(angle)) * self.speed
-        self.velocity_y = math.sin(math.radians(angle)) * self.speed
+        self.velocity_x = math.cos(math.radians(angle2)) * self.speed
+        self.velocity_y = math.sin(math.radians(angle2)) * self.speed
 
     def update(self):
         self.rect.x += self.velocity_x

@@ -89,20 +89,20 @@ class Player(pygame.sprite.Sprite):
 
         if self.shoot_flag and now - self.last_shot >= self.bullet_delay:
             self.last_shot = now
-            bullet = Player_Bullet(self.rect.centerx - 15, self.rect.top)
+            bullet = Player_Bullet(self.rect.centerx - 10, self.rect.top)
             player_bullets.add(bullet)
             pygame.mixer.Sound.play(bullet_sound)
 
             # While being powered up woth item1, player can shoot 3 bullet3.
             if self.multi or self.berserk:
-                right_bullet = Player_Bullet(self.rect.centerx + 5, self.rect.top)
-                left_bullet = Player_Bullet(self.rect.centerx - 35, self.rect.top)
+                right_bullet = Player_Bullet(self.rect.centerx + 10, self.rect.top)
+                left_bullet = Player_Bullet(self.rect.centerx - 30, self.rect.top)
                 player_bullets.add(right_bullet)
                 player_bullets.add(left_bullet)
 
             if self.wide or self.berserk:
-                right_bullet = Player_Wide_Bullet(self.rect.right-50, self.rect.centery-15, 30)
-                left_bullet = Player_Wide_Bullet(self.rect.left+40, self.rect.centery-15, 150)
+                right_bullet = Player_Wide_Bullet(self.rect.left + 40, self.rect.centery - 25, 125, 150)
+                left_bullet = Player_Wide_Bullet(self.rect.right - 83, self.rect.centery - 25, 55, 30)
                 player_bullets.add(right_bullet)
                 player_bullets.add(left_bullet)
 

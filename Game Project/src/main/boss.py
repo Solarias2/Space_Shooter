@@ -25,7 +25,7 @@ class Boss(pygame.sprite.Sprite):
         self.rect.bottom = 250
 
         # Boss's HP
-        hp = [50, 25, 100]
+        hp = [50, 25, 500]
         self.hp = hp[self.diff]
 
     def update(self):
