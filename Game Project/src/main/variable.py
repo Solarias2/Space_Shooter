@@ -46,7 +46,7 @@ menu_options = [
     "ゲームスタート",
     "設定",
     "遊び方",
-    "終了"
+    "終わる"
 ]
 
 # Loop through the menu options and create a menu item for each one
@@ -55,7 +55,7 @@ for index, option in enumerate(menu_options):
     text = menu_font.render(option, True, (255, 255, 255))
     rect = text.get_rect()
     rect.centerx = screen.get_rect().centerx
-    rect.centery = screen.get_rect().centery + index * 60
+    rect.centery = screen.get_rect().centery - 60 + index * 70
     menu_items.append((option, text, rect))
 
 # Set the default menu option to the first one
@@ -82,17 +82,23 @@ setting_options = [
 # Loop through the menu options and create a menu item for each one
 setting_items = []
 for index, option in enumerate(setting_options):
-    if index != 6:
+    if index <= 2:
         text = menu_font.render(option, True, (255, 255, 255))
         rect = text.get_rect()
         rect.centerx = screen.get_rect().centerx
-        rect.centery = screen.get_rect().centery + index * 50
+        rect.centery = screen.get_rect().top + 200 + index * 70
+        setting_items.append((option, text, rect))
+    elif index >= 3 and index <= 4:
+        text = menu_font.render(option, True, (255, 255, 255))
+        rect = text.get_rect()
+        rect.centerx = screen.get_rect().centerx
+        rect.centery = screen.get_rect().top + 370 + index * 70
         setting_items.append((option, text, rect))
     else:
         text = menu_font.render(option, True, (255, 255, 255))
         rect = text.get_rect()
         rect.centerx = screen.get_rect().centerx
-        rect.centery = screen.get_rect().centery + index * 100
+        rect.centery = screen.get_rect().centery + 350
         setting_items.append((option, text, rect))
 
 # Set the default menu option to the first one
@@ -198,7 +204,8 @@ hit_enemies = []
 boss_bullets = pygame.sprite.Group() 
 
 #Text being used in the Game
-SETTING_MENU_TEXT = 'DIFFICULTY'
+SETTING_MENU_TEXT1 = '難易度'
+SETTING_MENU_TEXT2 = 'ゲームモード'
 HELP_MENU_TEXT = '遊び方\n1. 矢印キーでプレイヤーを移動，スペースキーで弾を発射\n2. スコアが50を超えたら，ボスが出現\n3. 5回攻撃を受けると，ゲームオーバー\n4. 難易度は，イージー，ミディアム，ハードの3つ\n\nエネミーは3種類\nエネミー1を倒すと10点，エネミー2を倒すと50点'
 GAME_OVER_TEXT = 'ゲームオーバー!!\nもう一度遊びますか？'
 GAME_CLEAR_TEXT = 'クリアおめでとう!!!!!'

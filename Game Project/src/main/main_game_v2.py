@@ -7,6 +7,7 @@ from player import Player
 from enemy import Enemy1, Enemy2
 from boss import Boss
 from item import Item1, Item2, Item3, Item4, Heart
+from explosion import Explosion
 
 
 ################################## Functions ##################################
@@ -23,9 +24,9 @@ def Enemy_Drop(Difficulty_flag):
         items.draw(variable.screen)
 
         if Difficulty_flag == 2:
-            check_prob = random.randint(0,7000)
+            check_prob = random.randint(0,5000)
         else:
-            check_prob = random.randint(0, 10000)
+            check_prob = random.randint(0, 7000)
         
         #Multi Drop
         if check_prob <= 200:
@@ -77,6 +78,9 @@ item1_timelimit = 7 * 1000
 item2_timelimit = 7 * 1000
 item3_timelimit = 7 * 1000
 item4_timelimit = 4 * 1000
+
+# Explosion
+explosion = Explosion()
 
 # Variable
 game_state = variable.game_state
@@ -305,10 +309,6 @@ while running:
 
         items.draw(variable.screen)
 
-        # Display item for whenever an enemy dies
-            
-
-
         # Display player hp
         for i in range(player.hp):
             variable.screen.blit(variable.player_hp, (10 + i * 50, variable.SCREEN_HEIGHT - 50))
@@ -395,6 +395,8 @@ while running:
                             game_state = variable.STATE_DEAD
                             functions.music_change('../Music/menu_music.wav')
 
+                explosion.update(player.rect.centerx, player.rect.centery)
+
         # Collision judgement for Item
          # For player and items
         for item in items:
@@ -471,7 +473,8 @@ while running:
     # For Setting
     if game_state == variable.STATE_SETTING:
         # Draw setting screen
-        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font(None, 50))
+        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT1, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 12), pygame.font.Font('../Fonts/ipam.ttf', 50))
+        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT2, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 2), pygame.font.Font('../Fonts/ipam.ttf', 50))
         for index, item in enumerate(variable.setting_items):
             if index == setting_index:
                 # Selected items are drawn in white
