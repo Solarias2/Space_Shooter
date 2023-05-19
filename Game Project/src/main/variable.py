@@ -37,6 +37,7 @@ STATE_HELP = 2
 STATE_QUIT = 3
 STATE_CLEAR = 5
 STATE_DEAD = 6
+STATE_LEADERBOARD = 7
 
 # Current state
 game_state = STATE_MENU
@@ -74,8 +75,8 @@ setting_options = [
     "易しい",
     "普通",
     "難しい",
-    "スタンダード",
-    "フリープレイ",
+    "ボスシューティング",
+    "フリーシューティング",
     "戻る"
 ]
 
@@ -126,6 +127,7 @@ help_index = 0
 # Define retry options
 retry_options = [
     "もう一度",
+    "ハイスコア", 
     "終わる"
 ]
 
@@ -201,7 +203,8 @@ enemy_bullets = pygame.sprite.Group()
 hit_enemies = []
 
 # Boss_bullets
-boss_bullets = pygame.sprite.Group() 
+boss_bullets = pygame.sprite.Group()
+
 
 #Text being used in the Game
 SETTING_MENU_TEXT1 = '難易度'
