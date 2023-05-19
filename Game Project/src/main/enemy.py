@@ -64,13 +64,7 @@ class Enemy1(pygame.sprite.Sprite):
     def damage(self):
         self.hp -= 1
         if self.hp == 0:
-            self.kill()
             return True
-        
-    # Add a new Enemy1
-    def new_add(self):
-        new_enemy1 = Enemy1()
-        enemies.add(new_enemy1)
         
 
 class Enemy2(pygame.sprite.Sprite):
@@ -137,10 +131,4 @@ class Enemy2(pygame.sprite.Sprite):
     def damage(self):
         self.hp -= 1
         if self.hp == 0:
-            self.kill()
             return True
-        
-    # Add a new Enemy2
-    def new_add(self):
-        new_enemy2 = Enemy2()
-        enemies.add(new_enemy2)

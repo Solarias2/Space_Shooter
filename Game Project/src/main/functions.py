@@ -1,6 +1,7 @@
 import pygame
 from pygame import mixer
 from variable import SCREEN_WIDTH, SCREEN_HEIGHT
+from explosion import Explosion
 
 def music_change(Music):
     mixer.music.stop()
@@ -24,3 +25,15 @@ def blit_text(surface, text, pos, font, color=pygame.Color('white')):
             x += word_width + space 
         x= pos[0]
         y += word_height
+
+# def make_explosion(x, y, flag):
+#     if flag and not explosion.explosion_Finish:
+#         explosion.update(x, y)
+
+#     if explosion.sprite_index == 15:
+#         explosion.sprite_index = 0
+#         explosion.explosion_Finish = True
+
+# def make_explosion(x, y):
+#     explo = Explosion(x, y)
+#     explosion.add(explo)

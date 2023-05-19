@@ -7,6 +7,7 @@ from player import Player
 from enemy import Enemy1, Enemy2
 from boss import Boss
 from item import Item1, Item2, Item3, Item4, Heart
+from explosion import Explosion
 
 
 ################################## Functions ##################################
@@ -19,39 +20,39 @@ def reset_game():
     player.rect.centerx = variable.SCREEN_WIDTH / 2
     player.rect.bottom = variable.SCREEN_HEIGHT - 60
 
+
 def Enemy_Drop(Difficulty_flag):
-        items.draw(variable.screen)
+    items.draw(variable.screen)
 
-        if Difficulty_flag == 2:
-            check_prob = random.randint(0,7000)
-        else:
-            check_prob = random.randint(0, 10000)
-        
-        #Multi Drop
-        if check_prob <= 200:
-            item1 = Item1()
-            items.add(item1)
+    if Difficulty_flag == 2:
+        check_prob = random.randint(0, 5000)
+    else:
+        check_prob = random.randint(0, 7000)
 
-        # Wide Drop
-        if check_prob > 200 and check_prob <= 400:
-            item2 = Item2()
-            items.add(item2)
+    # Multi Drop
+    if check_prob <= 200:
+        item1 = Item1()
+        items.add(item1)
 
-        #Fast Drop
-        if check_prob > 400 and check_prob <= 600:
-            item3 = Item3()
-            items.add(item3)
+    # Wide Drop
+    if check_prob > 200 and check_prob <= 400:
+        item2 = Item2()
+        items.add(item2)
 
-        # Berserk Drop
-        if check_prob > 600 and check_prob <= 650:
-            item4 = Item4()
-            items.add(item4)
+    # Fast Drop
+    if check_prob > 400 and check_prob <= 600:
+        item3 = Item3()
+        items.add(item3)
 
-        #Heart Drop
-        if check_prob > 650 and check_prob <= 700:
-            heart = Heart()
-            items.add(heart)
+    # Berserk Drop
+    if check_prob > 600 and check_prob <= 650:
+        item4 = Item4()
+        items.add(item4)
 
+    # Heart Drop
+    if check_prob > 650 and check_prob <= 750:
+        heart = Heart()
+        items.add(heart)
 
 
 ################################## Basic parts of the game ##################################
@@ -78,6 +79,10 @@ item2_timelimit = 7 * 1000
 item3_timelimit = 7 * 1000
 item4_timelimit = 4 * 1000
 
+# Explosion
+explosion = pygame.sprite.Group()
+Explode_time = 1500
+
 # Variable
 game_state = variable.game_state
 menu_index = variable.menu_index
@@ -86,6 +91,11 @@ GAME_MODE = variable.STANDARD_MODE
 setting_index = variable.setting_index
 retry_index = variable.retry_index
 bg_y = variable.bg_y
+border_score = [3000, 1000, 5000]
+clear_flag = False
+clear_count = 100
+game_over_flag = False
+game_over_count = 100
 
 # Set the max FPS
 clock = pygame.time.Clock()
@@ -117,7 +127,7 @@ while running:
                     if menu_index == 0:
                         game_state = variable.STATE_GAMEPLAY
                         reset_game()
-                        Start_Score = 5000
+                        Start_Score = border_score[DIFF]
                         multiplier = 2
                         score = 0
                         waiting_time = 0
@@ -126,6 +136,9 @@ while running:
                         player.hp = 5
                         player.damage_flag = False
                         player.invincible = 50
+                        clear_flag = game_over_flag = False
+                        clear_count = game_over_count = 100
+                        items.empty()
                         for i in range(6):
                             enemy1 = Enemy1(DIFF)
                             variable.enemies.add(enemy1)
@@ -157,11 +170,13 @@ while running:
             elif game_state == variable.STATE_SETTING:
                 if event.key == pygame.K_UP:
                     # Move the setting index up
-                    setting_index = (setting_index - 1) % len(variable.setting_items)
+                    setting_index = (
+                        setting_index - 1) % len(variable.setting_items)
 
                 elif event.key == pygame.K_DOWN:
                     # Move the setting index down
-                   setting_index = (setting_index + 1) % len(variable.setting_items)
+                    setting_index = (
+                        setting_index + 1) % len(variable.setting_items)
 
                 elif event.key == pygame.K_RETURN:
                     # Check which menu option was selected
@@ -180,7 +195,7 @@ while running:
                     elif setting_index == 3:
                         GAME_MODE = variable.STANDARD_MODE
                         pygame.mixer.Sound.play(variable.Menu_Select)
-                    
+
                     elif setting_index == 4:
                         GAME_MODE = variable.FREEPLAY_MODE
                         pygame.mixer.Sound.play(variable.Menu_Select)
@@ -210,8 +225,13 @@ while running:
                     if retry_index == 0:
                         game_state = variable.STATE_MENU
                         pygame.mixer.Sound.play(variable.Menu_Select)
+                        functions.music_change('../Music/menu_music.wav')
 
                     elif retry_index == 1:
+                        game_state = variable.STATE_LEADERBOARD
+                        pygame.mixer.Sound.play(variable.Menu_Select)
+
+                    elif retry_index == 2:
                         pygame.mixer.Sound.play(variable.Menu_Select)
                         pygame.quit()
                         sys.exit()
@@ -221,7 +241,7 @@ while running:
                 # Shoot bullets
                 if event.key == pygame.K_SPACE:
                     player.shoot_flag = True
-                    
+
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 player.shoot_flag = False
@@ -255,14 +275,22 @@ while running:
         variable.player_bullets.update()
         variable.enemy_bullets.update()
 
+        explosion.update()
+
         # Collision judgement for Player_bullet
         for bullet in variable.player_bullets:
-            bullet_hits = pygame.sprite.spritecollide(bullet, variable.enemies, False)
+            bullet_hits = pygame.sprite.spritecollide(
+                bullet, variable.enemies, False)
             for enemy in bullet_hits:
                 bullet.kill()
                 pygame.mixer.Sound.play(variable.Hit_sound)
                 if isinstance(enemy, Enemy1):
                     if enemy.damage():
+                        # When the enemy is defeated, the explosion animation should activate upon each enemy defeat
+                        explo = Explosion(enemy.rect.centerx,
+                                          enemy.rect.centery)
+                        explosion.add(explo)
+                        enemy.kill()
                         Enemy_Drop(DIFF)
                         score += 10
                         new_enemy1 = Enemy1(DIFF)
@@ -270,10 +298,18 @@ while running:
 
                 elif isinstance(enemy, Enemy2):
                     if enemy.damage():
+                        # When the enemy is defeated, the explosion animation should activate upon each enemy defeat
+                        explo = Explosion(enemy.rect.centerx,
+                                          enemy.rect.centery)
+                        explosion.add(explo)
+                        enemy.kill()
                         Enemy_Drop(DIFF)
                         score += 50
                         new_enemy2 = Enemy2(DIFF)
                         variable.enemies.add(new_enemy2)
+
+        # if explo.explosion_flag:
+        #     explosion.update()
 
         items.update()
 
@@ -287,31 +323,31 @@ while running:
 
         # Draw the player, enemies, and bullet
         if not player.damage_flag:
-            variable.screen.blit(player.image, player.rect)
-
-        else:
-            if player.invincible % 2 == 0:
+            if player.hp != 0:
                 variable.screen.blit(player.image, player.rect)
 
-            if player.invincible == 0:
-                player.invincible = 50
-                player.damage_flag = False
-            
-            player.invincible -= 1
+        else:
+            if player.hp != 0:
+                if player.invincible % 2 == 0:
+                    variable.screen.blit(player.image, player.rect)
+
+                if player.invincible == 0:
+                    player.invincible = 50
+                    player.damage_flag = False
+
+                player.invincible -= 1
 
         variable.enemies.draw(variable.screen)
         variable.player_bullets.draw(variable.screen)
         variable.enemy_bullets.draw(variable.screen)
 
         items.draw(variable.screen)
-
-        # Display item for whenever an enemy dies
-            
-
+        explosion.draw(variable.screen)
 
         # Display player hp
         for i in range(player.hp):
-            variable.screen.blit(variable.player_hp, (10 + i * 50, variable.SCREEN_HEIGHT - 50))
+            variable.screen.blit(variable.player_hp,
+                                 (10 + i * 50, variable.SCREEN_HEIGHT - 50))
 
         # Draw boss
         if score >= Start_Score and GAME_MODE == variable.STANDARD_MODE:
@@ -334,14 +370,17 @@ while running:
             # Collision judgement for Boss
              # For player bullets and boss
             for bullet in variable.player_bullets:
-                bullet_hits = pygame.sprite.spritecollide(bullet, bosses, False)
+                bullet_hits = pygame.sprite.spritecollide(
+                    bullet, bosses, False)
                 for boss in bullet_hits:
                     bullet.kill()
                     pygame.mixer.Sound.play(variable.Hit_sound)
                     if boss.damage():
                         score += 1000
-                        game_state = variable.STATE_CLEAR
-
+                        explo = Explosion(boss.rect.centerx, boss.rect.centery)
+                        explosion.add(explo)
+                        bosses.empty()
+                        clear_flag = True
 
              # For player and boss
             for boss in bosses:
@@ -350,8 +389,10 @@ while running:
                         if not player.damage_flag:
                             pygame.mixer.Sound.play(variable.death_sound)
                             if player.damage():
-                                game_state = variable.STATE_DEAD
-                                functions.music_change('../Music/menu_music.wav')
+                                explo = Explosion(
+                                    player.rect.centerx - 11, player.rect.centery)
+                                explosion.add(explo)
+                                game_over_flag = True
 
              # For player and boss bullets
             for bullet in variable.boss_bullets:
@@ -360,8 +401,17 @@ while running:
                         if not player.damage_flag:
                             pygame.mixer.Sound.play(variable.death_sound)
                             if player.damage():
-                                game_state = variable.STATE_DEAD
-                                functions.music_change('../Music/menu_music.wav')
+                                explo = Explosion(
+                                    player.rect.centerx - 11, player.rect.centery)
+                                explosion.add(explo)
+                                game_over_flag = True
+
+        # Make delay until the game is finished
+        if clear_flag:
+            clear_count -= 1
+            if clear_count == 0:
+                game_state = variable.STATE_CLEAR
+                functions.music_change('../Music/clear.ogg')
 
         # Gameover
          # For player and enemies
@@ -381,19 +431,32 @@ while running:
                             variable.enemies.add(new_enemy2)
 
                         if player.damage():
-                            game_state = variable.STATE_DEAD
-                            functions.music_change('../Music/menu_music.wav')
+                            # Explosion of player
+                            explo = Explosion(
+                                player.rect.centerx - 11, player.rect.centery)
+                            explosion.add(explo)
+                            game_over_flag = True
 
          # For player and enemies bullets
         for bullet in variable.enemy_bullets:
             if player.rect.colliderect(bullet.rect):
+                # current_hit_time = pygame.time.get_ticks()
                 if bullet.type in variable.death_conditions["Colliding with an enemy bullet"]:
                     if not player.damage_flag:
                         bullet.kill()
                         pygame.mixer.Sound.play(variable.death_sound)
                         if player.damage():
-                            game_state = variable.STATE_DEAD
-                            functions.music_change('../Music/menu_music.wav')
+                            explo = Explosion(
+                                player.rect.centerx - 11, player.rect.centery)
+                            explosion.add(explo)
+                            game_over_flag = True
+
+        # Make delay until the game is finished
+        if game_over_flag:
+            game_over_count -= 1
+            if game_over_count == 0:
+                game_state = variable.STATE_DEAD
+                functions.music_change('../Music/menu_music.wav')
 
         # Collision judgement for Item
          # For player and items
@@ -439,7 +502,6 @@ while running:
 
                     item.kill()
 
-
         # Item1's time limit
         if player.multi:
             powerup1_now = pygame.time.get_ticks()
@@ -471,7 +533,10 @@ while running:
     # For Setting
     if game_state == variable.STATE_SETTING:
         # Draw setting screen
-        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font(None, 50))
+        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT1, (variable.SCREEN_WIDTH /
+                            3, variable.SCREEN_HEIGHT / 12), pygame.font.Font('../Fonts/ipam.ttf', 50))
+        functions.blit_text(variable.screen, variable.SETTING_MENU_TEXT2, (variable.SCREEN_WIDTH /
+                            3, variable.SCREEN_HEIGHT / 2), pygame.font.Font('../Fonts/ipam.ttf', 50))
         for index, item in enumerate(variable.setting_items):
             if index == setting_index:
                 # Selected items are drawn in white
@@ -484,12 +549,14 @@ while running:
     # For Help
     if game_state == variable.STATE_HELP:
         # Draw help screen
-        functions.blit_text(variable.screen, variable.HELP_MENU_TEXT, (variable.SCREEN_WIDTH / 3 - 200, variable.SCREEN_HEIGHT / 10), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        functions.blit_text(variable.screen, variable.HELP_MENU_TEXT, (variable.SCREEN_WIDTH /
+                            3 - 200, variable.SCREEN_HEIGHT / 10), pygame.font.Font('../Fonts/ipam.ttf', 36))
         for index, item in enumerate(variable.help_items):
             variable.screen.blit(item[1], item[2])
 
     if game_state == variable.STATE_CLEAR:
-        functions.blit_text(variable.screen, variable.GAME_CLEAR_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        functions.blit_text(variable.screen, variable.GAME_CLEAR_TEXT, (variable.SCREEN_WIDTH / 3,
+                            variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
         for index, item in enumerate(variable.retry_items):
             if index == retry_index:
                 # Selected items are drawn in white
@@ -501,7 +568,8 @@ while running:
 
     # For Game Over
     if game_state == variable.STATE_DEAD:
-        functions.blit_text(variable.screen, variable.GAME_OVER_TEXT, (variable.SCREEN_WIDTH / 3, variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
+        functions.blit_text(variable.screen, variable.GAME_OVER_TEXT, (variable.SCREEN_WIDTH / 3,
+                            variable.SCREEN_HEIGHT / 5), pygame.font.Font('../Fonts/ipam.ttf', 36))
         for index, item in enumerate(variable.retry_items):
             if index == retry_index:
                 # Selected items are drawn in white
@@ -510,6 +578,9 @@ while running:
                 # Unselected items are drawn in gray
                 variable.screen.blit(variable.menu_font.render(
                     item[0], True, (128, 128, 128)), item[2])
+                
+    if game_state == variable.STATE_LEADERBOARD:
+        pass
 
     # Update screen
     pygame.display.flip()

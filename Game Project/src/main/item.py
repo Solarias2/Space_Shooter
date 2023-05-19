@@ -122,7 +122,7 @@ class Heart(pygame.sprite.Sprite):
         self.image = pygame.image.load("../Assets/Life_Up.png")
         self.rect = self.image.get_rect()
         self.rect.x = random.choice([0, variable.SCREEN_WIDTH])
-        self.rect.y = random.randrange(variable.SCREEN_HEIGHT / 2, variable.SCREEN_HEIGHT - self.rect.height)
+        self.rect.y = random.randrange(variable.SCREEN_HEIGHT / 2, variable.SCREEN_HEIGHT - self.rect.height * 1.5)
 
         # Setting speed
         self.speed = 9

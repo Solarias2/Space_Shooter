@@ -89,7 +89,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.shoot_flag and now - self.last_shot >= self.bullet_delay:
             self.last_shot = now
-            bullet = Player_Bullet(self.rect.centerx - 10, self.rect.top)
+            bullet = Player_Bullet(self.rect.centerx - 11, self.rect.top)
             player_bullets.add(bullet)
             pygame.mixer.Sound.play(bullet_sound)
 
@@ -114,3 +114,6 @@ class Player(pygame.sprite.Sprite):
         self.damage_flag = True
         if self.hp == 0:
             return True
+        
+    def game_over(self):
+        self.kill()
