@@ -91,7 +91,7 @@ GAME_MODE = variable.STANDARD_MODE
 setting_index = variable.setting_index
 retry_index = variable.retry_index
 bg_y = variable.bg_y
-border_score = [3000, 1000, 5000]
+border_score = [2000, 1000, 2500]
 clear_flag = False
 clear_count = 100
 game_over_flag = False
@@ -136,6 +136,7 @@ while running:
                         player.hp = 5
                         player.damage_flag = False
                         player.invincible = 50
+                        player.multi = player.wide = player.fast = player.berserk = False
                         clear_flag = game_over_flag = False
                         clear_count = game_over_count = 100
                         items.empty()
@@ -308,9 +309,6 @@ while running:
                         new_enemy2 = Enemy2(DIFF)
                         variable.enemies.add(new_enemy2)
 
-        # if explo.explosion_flag:
-        #     explosion.update()
-
         items.update()
 
         # Draw background and scroll
@@ -389,6 +387,7 @@ while running:
                         if not player.damage_flag:
                             pygame.mixer.Sound.play(variable.death_sound)
                             if player.damage():
+                                player.alive = False
                                 explo = Explosion(
                                     player.rect.centerx - 11, player.rect.centery)
                                 explosion.add(explo)
@@ -401,6 +400,7 @@ while running:
                         if not player.damage_flag:
                             pygame.mixer.Sound.play(variable.death_sound)
                             if player.damage():
+                                player.alive = False
                                 explo = Explosion(
                                     player.rect.centerx - 11, player.rect.centery)
                                 explosion.add(explo)
@@ -431,6 +431,7 @@ while running:
                             variable.enemies.add(new_enemy2)
 
                         if player.damage():
+                            player.alive = False
                             # Explosion of player
                             explo = Explosion(
                                 player.rect.centerx - 11, player.rect.centery)
@@ -446,6 +447,7 @@ while running:
                         bullet.kill()
                         pygame.mixer.Sound.play(variable.death_sound)
                         if player.damage():
+                            player.alive = False
                             explo = Explosion(
                                 player.rect.centerx - 11, player.rect.centery)
                             explosion.add(explo)

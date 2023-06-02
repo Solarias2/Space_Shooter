@@ -52,7 +52,6 @@ class Player_Wide_Bullet(pygame.sprite.Sprite):
 
 
 
-
 class Enemy_Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, speed):
         super().__init__()
@@ -84,5 +83,4 @@ class Boss_bullet(pygame.sprite.Sprite):
         self.rect.y += self.speed
         if self.rect.bottom > SCREEN_HEIGHT:
             self.kill()
-
 

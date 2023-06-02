@@ -21,6 +21,9 @@ class Player(pygame.sprite.Sprite):
         # Player's HP
         self.hp = 5
 
+        # Player alive flag
+        self.alive = True
+
         # Setting speed
         self.speed = 15
 
